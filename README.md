@@ -1,81 +1,171 @@
-# Shopify Back-in-Stock Notification Prototype
-## Designing a Privacy-Conscious Back-in-Stock Email Notification Prototype for Shopify
+# Shopify Back-in-Stock Notification Prototype - Usage & Installation Guide
 
-**Assessment:** ISK1002 – Industry Skills II, Assessment 2: Technical Blog Post & Prototype
+## Table of Contents
+1. [Overview](#1-overview)
+2. [Prerequisites](#2-prerequisites)
+3. [Installation & Setup](#3-installation--setup)
+4. [Environment Variables](#4-environment-variables)
+5. [Running the Application](#5-running-the-application)
+6. [API Endpoints Reference](#6-api-endpoints-reference)
 
-## Problem context
+---
 
-A small Shopify merchant may lose a potential sale when an interested customer visits an unavailable product but has no simple way to learn when the required variant becomes available. Existing third-party applications may include broader feature sets or ongoing costs that are disproportionate to a merchant who needs only a focused back-in-stock email workflow. Any cost or feature comparison used in the final article must be validated with current external evidence rather than presented only as personal experience.
+## 1. Overview
 
-## In scope
+write abaout the app, how it will be used, technologies
 
-| Area | Included capability |
-|---|---|
-| Storefront | Unavailable-state control, variant identification, accessible form, submission feedback and return-to-product link. |
-| Data collection | Email address, exact product/variant identifiers, timestamps, request status and optional first name only if justified. |
-| Validation | Required fields, basic email-format checking, valid variant reference and duplicate prevention. |
-| Inventory workflow | Processing an inventory-level event and confirming that the relevant quantity became positive. |
-| Notification | One controlled back-in-stock email preview for each eligible pending request. |
-| Reliability | Idempotent handling so a completed request is not notified twice, plus safe failure recording. |
-| Security and privacy | Server-side secret storage, webhook verification, data minimisation, neutral error responses and no secrets in documentation. |
-| Testing | Documented normal, invalid, duplicate, irrelevant-event, repeated-event and email-failure cases. |
-| Documentation | README, requirements, project plan, test evidence, decision log, limitations and troubleshooting. |
-| Article | Problem validation, industry trends, technical and ethical analysis, solution, prototype, technology justification, plan, reflection and future improvements. |
+---
 
-## Out of scope
+## 2. Prerequisites
 
-| Excluded feature | Reason for exclusion |
-|---|---|
-| SMS and phone-number collection | Not required for an email-only problem and increases privacy, security and integration scope. |
-| Real customer email delivery | A controlled email preview is sufficient to demonstrate the workflow safely. |
-| General marketing automation | The project is a requested transactional notification, not a campaign platform. |
-| Public Shopify App Store publication | Distribution, review, billing and multi-merchant requirements are disproportionate to the assessment window. |
-| Merchant billing | Not necessary to validate the technical solution. |
-| Multi-store tenancy | The prototype targets one development store. |
-| Complex analytics dashboard | Does not contribute directly to the core problem. |
-| Stock reservation or waiting-list priority | The email informs the customer but does not guarantee availability. |
-| Production-scale queues and reconciliation | Important future work, but not essential to the bounded prototype. |
-| Full React administration interface | Adds scope without improving the core customer workflow. |
+To run this application locally, you must have the following installed on your machine:
+- **Node.js** (v18 or higher recommended)
+- **npm** (Node Package Manager)
+- **Git**
+- A **MongoDB Atlas** account (or local MongoDB installation)
 
-## Agreed solution architecture
+---
 
-| Layer | Agreed technology or approach |
-|---|---|
-| Development commerce environment | Shopify development store |
-| Storefront component | Shopify Liquid, HTML, CSS and browser JavaScript |
-| Server-side application | Node.js and Express |
-| Persistence | MongoDB |
-| Inventory trigger | Shopify `inventory_levels/update` webhook, with a controlled inventory-event fixture as the time-bounded fallback |
-| Email demonstration | Nodemailer with Ethereal |
-| React | Excluded from the storefront MVP; retained only as a considered alternative or possible future administration interface |
+## 3. Installation & Setup
 
-Shopify documents development stores as controlled environments for testing applications without affecting a live merchant store.[1] Shopify’s webhook guidance supports event-driven application behaviour but also requires authenticity and reliability controls such as signature verification and duplicate-delivery handling.[2] [3] Ethereal captures generated messages for preview without delivering them to real recipients, making it appropriate for this controlled prototype.[4]
+Because GAMS is a full-stack application, the backend and frontend live in separate repositories (or separate folders within a monorepo). You must install dependencies for **both** separately.
 
-## Ethical and privacy safeguards
+### Step 1: Clone the Repositories
+Open your terminal and clone both the backend and frontend repositories into the same parent directory:
 
-The minimum form will collect **email only**, with first name optional if the student can justify its use. A phone number will not be collected. Permission to receive the requested back-in-stock message will be explained clearly. Any optional general marketing consent must be separate, unticked by default and unnecessary for receiving the requested notification. The interface will state that the email does not reserve stock and availability may change before the customer returns.
+```bash
 
-Test data will use invented identities and non-sensitive addresses suitable for a fake SMTP service. Secrets will be loaded from environment variables and represented only by placeholder names in documentation. Logs will avoid full credentials, tokens and unnecessary personal information.
+git clone <https://github.com/lorenaborges256/DEV1003_A3_FrontEnd_GAMS>
+```
 
-## Primary user stories
+### Step 2: Install Backend Dependencies
+Navigate into the backend folder and install the required npm packages:
 
-| ID | User story | Priority |
-|---|---|---|
-| US-01 | As a customer viewing an unavailable variant, I want to request an email notification so that I can return when that exact variant becomes available. | Must |
-| US-02 | As a customer, I want to understand why my email is requested and what the notification does not guarantee so that I can make an informed choice. | Must |
-| US-03 | As a customer, I want a clear confirmation or correction message after submitting the form so that I know whether the request was accepted. | Must |
-| US-04 | As a merchant, I want duplicate requests to be prevented so that customers do not receive repeated messages. | Must |
-| US-05 | As a merchant, I want pending requests processed when relevant inventory becomes available so that the workflow requires minimal manual intervention. | Must |
-| US-06 | As a developer, I want failures and repeated events handled safely so that the prototype does not record false success or send duplicate notifications. | Must |
-| US-07 | As an assessor, I want the prototype’s integrated, simulated and unfinished behaviour identified accurately so that the evidence is trustworthy. | Must |
-| US-08 | As a merchant, I want a visual dashboard showing all requests and analytics. | Won’t in MVP |
-| US-09 | As a customer, I want an SMS notification. | Won’t in MVP |
+```bash
+cd <DEV1003_A2_BackEnd_GAMS>
+npm install
+```
+
+### Step 3: Install Frontend Dependencies
+Open a **new terminal window**, navigate to the frontend folder, and install the required npm packages:
+
+```bash
+cd <DEV1003_A3_FrontEnd_GAMS>
+npm install
+```
+
+---
+
+## 4. Environment Variables
+
+Both the backend and frontend require environment variables to communicate securely. **Never commit `.env` files to GitHub.**
+
+### Backend `.env`
+Create a file named `.env` in the root of your **backend** folder. Add the following variables:
+
+```env
+# Database Connections
+PORT=5000
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-url>.mongodb.net/gams_db
+
+# Security
+JWT_SECRET=your_secret_key_here
+TOKEN_HEADER_KEY=authorization
+```
+- *Replace `<username>`, `<password>`, and `<cluster-url>` with your actual MongoDB Atlas credentials.*  
+- Generate JWT secret key in console with ```node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"```
+
+### Frontend `.env`
+Create a file named `.env` in the root of your **frontend** folder. Add the following variable so React knows where to find the Express API:
+
+```env
+VITE_API_URL=http://localhost:5000
+```
+
+---
+
+## 5. Running the Application
+
+To run the full MERN stack, you must run both the backend and frontend simultaneously using **two separate terminal windows**.
+
+### Starting the Backend Server
+In your first terminal, navigate to the backend directory and execute the seeding script to populate the database with initial data:
+
+```bash
+npm run seed
+```
+>Note on Administrative Access: By default, the seeding process designates one specific user with the Admin role. In a production environment, you can manually elevate a user's privileges by changing their role from 'user' to 'admin' directly within the MongoDB Atlas interface.
+For future iterations, we recommend implementing a "User Management" feature within the Admin Dashboard. This would allow existing administrators to securely promote other users to admin status directly through the application UI.
 
 
+Once the database is seeded, start the backend application in development mode:
 
-## References
+```bash
+npm run dev
+```
+You should see:
+```
+Connected to MongoDB!
+Server is running at http://localhost:5000
+```
 
-1. [Shopify: Dev Stores for App Testing](https://shopify.dev/docs/apps/build/dev-dashboard/stores/development-stores)
-2. [Shopify: About Webhooks](https://shopify.dev/docs/apps/build/webhooks)
-3. [Shopify: Verify Webhook Deliveries](https://shopify.dev/docs/apps/build/webhooks/verify-deliveries)
-4. [Nodemailer: Testing with Ethereal](https://nodemailer.com/guides/testing-with-ethereal)
+### Starting the Frontend Client
+In your second terminal (inside the frontend folder), run:
+
+```bash
+npm run dev
+```
+You should see Vite start the server, typically at:
+```
+  VITE v5.x.x  ready in xxx ms
+  ➜  Local:  http://localhost:5173
+```
+
+### Accessing the App
+Open your web browser and navigate to `http://localhost:5173`. The React frontend will load and automatically fetch data from your backend API running on port 5000.
+
+---
+
+## 6. API Endpoints Reference
+
+Below is a reference of the core API endpoints provided by the GAMS backend. You can test these using tools like Bruno, Insomnia or Postman.
+
+*Note: Most endpoints require a valid JWT token passed in the `Authorization` header (`Bearer <token>`).*
+
+### Authentication
+| Method | Endpoint | Auth Required | Description |
+|---|---|---|---|
+| POST | `/auth/register` | No | Register a new Guild Member |
+| POST | `/auth/login` | No | Authenticate user and receive JWT |
+
+### Items (Inventory-Based)
+| Method | Endpoint | Auth Required | Description |
+|---|---|---|---|
+| GET | `/items` | Yes | List all available artifacts |
+| GET | `/items/:id` | Yes | Get specific artifact details |
+| POST | `/items/:id/reserve` | Yes | Reserve an artifact (decrements stock) |
+| POST | `/items` | Admin | Create a new artifact |
+| PUT | `/items/:id` | Admin | Update artifact details or stock |
+
+### Guild Contracts (Time-Based Quests)
+| Method | Endpoint | Auth Required | Description |
+|---|---|---|---|
+| GET | `/contracts` | Yes | List all active contracts |
+| GET | `/contracts/:id` | Yes | Get specific contract details |
+| POST | `/contracts/:id/accept` | Yes | Accept a contract (generates instructions) |
+| POST | `/contracts` | Admin | Create a new contract |
+
+### Watchlists
+| Method | Endpoint | Auth Required | Description |
+|---|---|---|---|
+| GET | `/watchlist` | Yes | View user's watched items/contracts |
+| POST | `/watchlist/:targetId` | Yes | Add an unavailable item/contract to watchlist |
+| GET | `/notifications` | Yes | View user notifications |
+
+### User Dashboard
+| Method | Endpoint | Auth Required | Description |
+|---|---|---|---|
+| GET | `/dashboard` | Yes | View user active reservations, Items, and accepted contracts |
+
+---
+
