@@ -26,16 +26,12 @@ To run this application locally, you must have the following installed on your m
 
 ---
 
-## 3. Installation & Setup
-
-Because GAMS is a full-stack application, the backend and frontend live in separate repositories (or separate folders within a monorepo). You must install dependencies for **both** separately.
-
 ### Step 1: Clone the Repositories
 Open your terminal and clone both the backend and frontend repositories into the same parent directory:
 
 ```bash
 
-git clone <https://github.com/lorenaborges256/DEV1003_A3_FrontEnd_GAMS>
+git clone <https://github.com/lorenaborges256/back-in-stock-prototype-shopify>
 ```
 
 ### Step 2: install packages
@@ -52,53 +48,19 @@ npm install --save-dev nodemon
 
 Both the backend and frontend require environment variables to communicate securely. **Never commit `.env` files to GitHub.**
 
-### Backend `.env`
-Create a file named `.env` in the root of your **backend** folder. Add the following variables:
-
-```env
-# Database Connections
-PORT=5000
-MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-url>.mongodb.net/gams_db
-
-# Security
-JWT_SECRET=your_secret_key_here
-TOKEN_HEADER_KEY=authorization
-```
-- *Replace `<username>`, `<password>`, and `<cluster-url>` with your actual MongoDB Atlas credentials.*  
-- Generate JWT secret key in console with ```node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"```
-
-### Frontend `.env`
-Create a file named `.env` in the root of your **frontend** folder. Add the following variable so React knows where to find the Express API:
-
-```env
-VITE_API_URL=http://localhost:5000
-```
 
 ---
 
 ## 5. Running the Application
 
-To run the full MERN stack, you must run both the backend and frontend simultaneously using **two separate terminal windows**.
-
-### Starting the Backend Server
-In your first terminal, navigate to the backend directory and execute the seeding script to populate the database with initial data:
-
-```bash
-npm run seed
-```
->Note on Administrative Access: By default, the seeding process designates one specific user with the Admin role. In a production environment, you can manually elevate a user's privileges by changing their role from 'user' to 'admin' directly within the MongoDB Atlas interface.
-For future iterations, we recommend implementing a "User Management" feature within the Admin Dashboard. This would allow existing administrators to securely promote other users to admin status directly through the application UI.
-
-
-Once the database is seeded, start the backend application in development mode:
 
 ```bash
 npm run dev
 ```
 You should see:
 ```
-Connected to MongoDB!
-Server is running at http://localhost:5000
+MongoDB connection established.
+Back-in-stock API listening on port 3001.
 ```
 
 ### Starting the Frontend Client

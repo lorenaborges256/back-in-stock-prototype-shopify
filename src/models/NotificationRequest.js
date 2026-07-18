@@ -103,10 +103,10 @@ const notificationRequestSchema = new Schema(
 );
 
 /**
- * Only pending requests participate in duplicate prevention. After a request
- * is sent or cancelled, a future request for the same email and variant may be
- * created. The database index, rather than a pre-insert lookup alone, protects
- * against two concurrent requests passing the same check.
+ * Pending and processing requests are active requests. The database index,
+ * rather than a pre-insert lookup alone, protects against concurrent requests
+ * for the same store, email address and variant while notification processing
+ * is in progress. Sent, failed and cancelled requests do not participate.
  */
 notificationRequestSchema.index(
   {
@@ -115,12 +115,13 @@ notificationRequestSchema.index(
     variantId: 1
   },
   {
-    name: 'unique_pending_request_by_store_email_variant',
+    name: 'unique_active_request_by_store_email_variant',
     unique: true,
-    partialFilterExpression: { status: 'pending' }
+    partialFilterExpression: {
+      status: { $in: ['pending', 'processing'] }
+    }
   }
 );
-
 export const NotificationRequest = mongoose.model(
   'NotificationRequest',
   notificationRequestSchema

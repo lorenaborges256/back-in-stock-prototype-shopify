@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import { env } from './config/env.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import inventoryFixtureRoutes from './routes/inventoryFixtureRoutes.js';
 
 const app = express();
 
@@ -30,11 +31,14 @@ app.use(
 
 app.use(express.json({ limit: '20kb' }));
 
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
+app.get('/health', (request, response) => {
+  response.status(200).json({ status: 'ok' });
 });
 
 app.use('/api/notifications', notificationRoutes);
+if (env.nodeEnv === 'development') {
+  app.use('/api/test/inventory-events', inventoryFixtureRoutes);
+}
 app.use(notFoundHandler);
 app.use(errorHandler);
 
