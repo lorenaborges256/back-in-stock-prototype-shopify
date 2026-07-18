@@ -38,20 +38,12 @@ Open your terminal and clone both the backend and frontend repositories into the
 git clone <https://github.com/lorenaborges256/DEV1003_A3_FrontEnd_GAMS>
 ```
 
-### Step 2: Install Backend Dependencies
-Navigate into the backend folder and install the required npm packages:
+### Step 2: install packages
 
 ```bash
-cd <DEV1003_A2_BackEnd_GAMS>
-npm install
-```
-
-### Step 3: Install Frontend Dependencies
-Open a **new terminal window**, navigate to the frontend folder, and install the required npm packages:
-
-```bash
-cd <DEV1003_A3_FrontEnd_GAMS>
-npm install
+npm init -y
+npm install express mongoose dotenv cors helmet
+npm install --save-dev nodemon
 ```
 
 ---
