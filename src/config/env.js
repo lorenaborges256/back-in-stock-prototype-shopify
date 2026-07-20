@@ -1,6 +1,8 @@
 import 'dotenv/config';
 
-function requiredEnvironmentValue(name ) {
+const supportedEmailModes = new Set(['disabled', 'ethereal']);
+
+function requiredEnvironmentValue(name) {
   const value = process.env[name]?.trim();
 
   if (!value) {
@@ -20,6 +22,16 @@ function readPort(value) {
   return port;
 }
 
+function readEmailMode(value) {
+  const emailMode = value?.trim().toLowerCase() || 'disabled';
+
+  if (!supportedEmailModes.has(emailMode)) {
+    throw new Error('EMAIL_MODE must be either `disabled` or `ethereal`.');
+  }
+
+  return emailMode;
+}
+
 /**
  * Centralises configuration so the rest of the application never reads raw
  * environment variables. This prevents accidental logging of configuration
@@ -30,5 +42,6 @@ export const env = Object.freeze({
   port: readPort(process.env.PORT),
   mongoUri: requiredEnvironmentValue('MONGODB_URI'),
   shopDomain: requiredEnvironmentValue('SHOP_DOMAIN').toLowerCase(),
-  corsOrigin: process.env.CORS_ORIGIN?.trim() || null
+  corsOrigin: process.env.CORS_ORIGIN?.trim() || null,
+  emailMode: readEmailMode(process.env.EMAIL_MODE)
 });

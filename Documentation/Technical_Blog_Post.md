@@ -47,6 +47,11 @@ The minimum form will collect **email only**, with first name optional if the st
 
 Test data will use invented identities and non-sensitive addresses suitable for a fake SMTP service. Secrets will be loaded from environment variables and represented only by placeholder names in documentation. Logs will avoid full credentials, tokens and unnecessary personal information.
 
+## Known limitations or Development-only constraints
+The notification service uses Nodemailer with Ethereal only as a development-time SMTP test integration. In the tested local environment, automatic Ethereal account creation completed and the expected SMTP endpoint was reachable through PowerShell, but Nodemailer transport verification failed with a socket-level connection error before authentication. Consequently, this prototype does not claim that an email was delivered, captured in an Ethereal inbox, or that a notification request reached sent. The implemented request, inventory-event validation, idempotency, matching, and failure-handling paths remain separate from this unresolved external transport issue. Future work includes retesting on another Node.js/network environment or adding a clearly labelled local message-generation test; neither would constitute real email delivery.
+
+A development-only notification transport was implemented using Nodemailer and Ethereal because Ethereal is designed to capture test messages without delivering them to real recipients. However, the local Node.js process failed to open the SMTP socket before authentication, despite a successful PowerShell connectivity check to the expected port. Rather than disabling certificate checks or continuing indefinite environment debugging, the work was time-boxed and recorded as incomplete. This demonstrated the importance of separating deterministic business logic—request validation, inventory matching, idempotency and status control—from external delivery infrastructure. A future iteration should retest the connection in a different environment or introduce a separately labelled local message-generation test. It must not be presented as customer delivery
+
 ## Primary user stories
 
 | ID | User story | Priority |

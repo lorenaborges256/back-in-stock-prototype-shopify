@@ -38,7 +38,7 @@ git clone <https://github.com/lorenaborges256/back-in-stock-prototype-shopify>
 
 ```bash
 npm init -y
-npm install express mongoose dotenv cors helmet
+npm install express mongoose dotenv cors helmet nodemailer
 npm install --save-dev nodemon
 ```
 

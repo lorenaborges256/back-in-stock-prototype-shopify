@@ -8,7 +8,8 @@ const outcomeMessages = {
 
 /**
  * Development-only adapter. It translates the shared service result into a
- * safe HTTP response and never returns notification email addresses.
+ * safe HTTP response and never returns notification email addresses, message
+ * IDs or Ethereal preview URLs to a client.
  */
 export async function createInventoryFixtureEvent(req, res, next) {
   try {
@@ -19,14 +20,18 @@ export async function createInventoryFixtureEvent(req, res, next) {
       deliveryId: result.deliveryId,
       outcome: result.outcome,
       matchedRequestCount: result.matchedRequestCount,
-      transitionedRequestCount: result.transitionedRequestCount
+      transitionedRequestCount: result.transitionedRequestCount,
+      emailSentCount: result.emailSentCount,
+      emailFailedCount: result.emailFailedCount
     });
 
     return res.status(200).json({
       message: outcomeMessages[result.outcome],
       outcome: result.outcome,
       matchedRequestCount: result.matchedRequestCount,
-      transitionedRequestCount: result.transitionedRequestCount
+      transitionedRequestCount: result.transitionedRequestCount,
+      emailSentCount: result.emailSentCount,
+      emailFailedCount: result.emailFailedCount
     });
   } catch (error) {
     return next(error);
