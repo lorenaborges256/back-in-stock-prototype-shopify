@@ -1,0 +1,194 @@
+<h1>Designing a Privacy-Conscious Back-in-Stock Notification MVP for Shopify</h1>
+
+<p><strong>First-draft status:</strong> This is a student review draft. Before submitting it, replace the reflection prompts with your own words, verify all prototype details against your code and evidence, and confirm any Canvas-specific word-count requirement.</p>
+
+<p>When a customer visits an online store and finds a desired product out of stock, the merchant often loses the sale. This project investigates a specific solution: a back-in-stock notification workflow. The goal is to capture a customer's email request, process a simulated inventory event, and handle the data safely without sending duplicate emails.</p>
+
+<p>The prototype demonstrated the core event-processing path using invented data. However, the development-only email connection could not be verified locally, so email capture remains a documented limitation rather than a claimed outcome. This article explains the problem, the technical design, the ethical considerations, and the lessons learned during development.</p>
+
+<h2>1. The Problem: Losing Customers to Stockouts</h2>
+
+<p>Stockouts are a common problem in e-commerce. When a product is unavailable, customers may leave the store and buy from a competitor. Dadzie and Winston (2007)<a href="#ref-1">[1]</a> found that stockouts can negatively affect a customer's assessment of an online transaction and their intention to buy again. Kim, Knight and Mitrofanov (2024)<a href="#ref-2">[2]</a> also identify stockouts as a significant risk to customer loyalty.</p>
+
+<p>To address this, merchants need a way to tell customers when a product is available again. This project created a Minimum Viable Product (MVP) prototype. It uses a Shopify development store, a Node.js server, and a MongoDB database. It uses invented data and a controlled test event to simulate a restock, focusing on the core logic rather than building a full commercial app.</p>
+
+<h2>2. Industry Trend: Event-Driven Architecture</h2>
+
+<p>Modern e-commerce applications often use an event-driven design. Instead of constantly asking the store "is the product available yet?" (polling), the store sends a message (an event) only when the inventory changes. Shopify (n.d.)<a href="#ref-3">[3]</a> supports this through webhooks, which are near-real-time notifications that trigger actions in an application.</p>
+
+<p>Existing Shopify App Store listings from Notify Me! (n.d.)<a href="#ref-4">[4]</a>, Swym Corporation (n.d.)<a href="#ref-5">[5]</a>, and Appikon Software Pvt Ltd (n.d.)<a href="#ref-6">[6]</a> show that commercial back-in-stock products already exist. These commercial apps offer many features like SMS alerts, analytics, and theme customization. This student project does not try to compete with them. Instead, it deliberately reduces the scope to study how the core event and data workflow operates.</p>
+
+<h2>3. Technical Issues and Design Choices</h2>
+
+<p>Building a reliable notification system requires solving several technical problems:</p>
+
+<ul>
+    <li><strong>Event Duplication:</strong> Webhooks can sometimes be delivered more than once. The design must prevent a repeated delivery from repeating a state-changing action. The controlled event-processing path saves a <code>ProcessedInventoryEvent</code> with a unique delivery ID. Testing showed that a duplicate event was correctly recognized and did not cause a second request transition. This does not prove duplicate email delivery prevention because successful SMTP delivery was not demonstrated.</li>
+    <li><strong>Input Validation:</strong> The system must reject bad data. Controlled tests confirmed that invalid inventory values or unsupported fields returned an HTTP 400 error.</li>
+    <li><strong>Exact Matching:</strong> An inventory event must only consider requests for the exact product variant that was restocked. The controlled processing logic matches requests using the store domain, the specific inventory item ID, and a <code>pending</code> status.</li>
+    <li><strong>Event Reliability:</strong> Shopify (n.d.)<a href="#ref-3">[3]</a> warns that webhook delivery is not guaranteed. Because live webhook proof was outside the completed evidence, this prototype used a controlled test fixture to simulate the event reliably.</li>
+    <li><strong>Test-Email Transport:</strong> A test system should never send emails to real people. Nodemailer (n.d.)<a href="#ref-7">[7]</a> documents Ethereal test accounts, so Nodemailer with Ethereal was chosen. However, local SMTP verification failed, which is discussed later as a limitation.</li>
+</ul>
+
+<h2>4. Ethical and Privacy Considerations</h2>
+
+<p>A notification system handles personal data (email addresses), so it must be designed ethically.</p>
+
+<ul>
+    <li><strong>Data Minimization:</strong> The MVP data model is limited to the email address needed for a one-time notification, plus product references and operational timestamps. It does not require a phone number, date of birth, or payment details. This design aligns with the Australian Privacy Principles (APP 3), for which the Office of the Australian Information Commissioner (2026)<a href="#ref-8">[8]</a> states that collection must be reasonably necessary.</li>
+    <li><strong>Purpose and Transparency:</strong> The form must clearly state that the email is only for a one-time notification. It should not automatically subscribe the user to general marketing, consistent with the Office of the Australian Information Commissioner (2019)<a href="#ref-9">[9]</a>.</li>
+    <li><strong>Security:</strong> Secrets (like database passwords) must be kept out of the code repository. They are loaded using environment variables.</li>
+    <li><strong>Accessibility:</strong> The MVP requirements specify clear labels, understandable errors, keyboard operation, visible focus, and text-based status feedback. These are design requirements informed by World Wide Web Consortium guidance (n.d.)<a href="#ref-11">[11]</a>. Full accessibility conformance is not claimed because a formal audit has not yet been completed.</li>
+</ul>
+
+<h2>5. The Data Model</h2>
+
+<p>The system needs to remember two main things: the customer's request and the restock event. This is modeled in MongoDB using two collections:</p>
+
+<table border="1" cellpadding="5" cellspacing="0">
+    <tr>
+        <th>Entity</th>
+        <th>Business Fact</th>
+        <th>Key Attributes</th>
+    </tr>
+    <tr>
+        <td><code>NotificationRequest</code></td>
+        <td>A customer wants to know when a specific variant is available.</td>
+        <td><code>_id</code>, <code>emailNormalized</code>, <code>shopDomain</code>, <code>variantId</code>, <code>status</code> (e.g., pending, processing, sent).</td>
+    </tr>
+    <tr>
+        <td><code>ProcessedInventoryEvent</code></td>
+        <td>A restock event was received and must be remembered to prevent duplicates.</td>
+        <td><code>_id</code>, <code>deliveryId</code>, <code>inventoryItemId</code>, <code>available</code> quantity.</td>
+    </tr>
+</table>
+
+<p>MongoDB (n.d.)<a href="#ref-12">[12]</a> uses documents, where <code>_id</code> is the primary key. MongoDB (n.d.)<a href="#ref-13">[13]</a> supports unique indexes to enforce rules, such as ensuring that the <code>deliveryId</code> is unique. The application logic connects the two entities by matching the inventory item ID.</p>
+
+<h2>6. Technology Selection</h2>
+
+<p>The project uses a small JavaScript/Node.js/MongoDB architecture. React was considered but deliberately excluded from this MVP to keep the storefront scope small. Therefore, it would not be accurate to describe the implemented prototype as a full MERN application.</p>
+
+<ul>
+    <li><strong>Server:</strong> The OpenJS Foundation (n.d.)<a href="#ref-14">[14]</a> describes Node.js as an asynchronous, event-driven environment. Express.js (n.d.)<a href="#ref-16">[16]</a> provides routing and middleware. Python with Flask is a reasonable alternative, as documented by Pallets Projects (n.d.)<a href="#ref-15">[15]</a>, but Node was chosen to align with existing JavaScript skills.</li>
+    <li><strong>Database:</strong> MongoDB suits the distinct document structures of requests and events. PostgreSQL is an alternative that provides explicit relational constraints, as documented by PostgreSQL Global Development Group (n.d.)<a href="#ref-17">[17]</a>, but MongoDB was selected based on prior experience.</li>
+    <li><strong>Store Integration:</strong> A Shopify development store was selected to support safe testing without affecting real customers, as Shopify (n.d.)<a href="#ref-18">[18]</a> describes.</li>
+</ul>
+
+<h2>7. Project Plan, Testing, and Actual Outcomes</h2>
+
+<p>The project was planned using a workflow board with the stages <strong>To Do</strong>, <strong>Doing</strong>, <strong>Review</strong>, and <strong>Done</strong>. The following plan reduced the solution to one testable workflow instead of attempting a full commercial application. Before final submission, the student should add the actual effort and dates from the workflow board rather than estimating them after the fact.</p>
+
+<table border="1" cellpadding="5" cellspacing="0">
+    <tr>
+        <th>Planned activity</th>
+        <th>Estimated effort</th>
+        <th>Purpose</th>
+    </tr>
+    <tr>
+        <td>Problem, trend, ethics, and comparable-app research</td>
+        <td>7.5 hours</td>
+        <td>Validate the problem and support technical and ethical discussion with credible sources.</td>
+    </tr>
+    <tr>
+        <td>Requirements, data model, API contracts, and diagrams</td>
+        <td>4 hours</td>
+        <td>Define a limited, testable MVP before implementation.</td>
+    </tr>
+    <tr>
+        <td>Storefront and request API implementation</td>
+        <td>8–10 hours</td>
+        <td>Support the customer request path and server-side validation.</td>
+    </tr>
+    <tr>
+        <td>Inventory-event processing and controlled fixture testing</td>
+        <td>3–4 hours</td>
+        <td>Demonstrate matching, validation, and duplicate-event handling.</td>
+    </tr>
+    <tr>
+        <td>Email attempt, documentation, article drafting, and final review</td>
+        <td>15–18 hours</td>
+        <td>Record outcomes honestly, prepare the README, write the article, and complete the evidence and privacy review.</td>
+    </tr>
+</table>
+
+<p>Testing focused on the core event-processing logic using controlled, invented data. The following results are recorded in the project evidence log:</p>
+
+<table border="1" cellpadding="5" cellspacing="0">
+    <tr>
+        <th>Test Scenario</th>
+        <th>Expected Result</th>
+        <th>Actual Result</th>
+    </tr>
+    <tr>
+        <td>Positive matching event</td>
+        <td>Store the event and transition one matching pending request to <code>processing</code>.</td>
+        <td>Processed, matched 1, transitioned 1.</td>
+    </tr>
+    <tr>
+        <td>Duplicate event delivery</td>
+        <td>Do not repeat the transition.</td>
+        <td>Duplicate recognized; no second transition.</td>
+    </tr>
+    <tr>
+        <td>Zero stock event</td>
+        <td>Do not notify.</td>
+        <td>Ignored; request stayed pending.</td>
+    </tr>
+    <tr>
+        <td>Invalid availability value</td>
+        <td>Reject request.</td>
+        <td>HTTP 400 error; no event recorded.</td>
+    </tr>
+</table>
+
+<h2>8. Limitations: What Was Attempted</h2>
+
+<p>The controlled prototype evidence demonstrates event persistence, request matching, input validation, and duplicate-event handling. However, the email delivery part reached an attempted resolution rather than a complete one.</p>
+
+<p>The test email component generated a valid Ethereal configuration consistent with Nodemailer guidance (n.d.)<a href="#ref-7">[7]</a>. However, transport verification failed at a local Node.js socket connection stage (<code>ESOCKET</code> / <code>CONN</code>) before authentication. A separate test confirmed the port was reachable, narrowing the issue to the local Node/Nodemailer connection. To protect the project scope and timeline, further debugging was deferred. Therefore, no claim of successful email notification is made.</p>
+
+<h2>9. Student Reflection</h2>
+
+<p><strong>Student revision required:</strong> This section must be rewritten in your own words before submission. Do not submit the prompts below as if they are your personal reflection.</p>
+
+<p>Before this project, describe your real starting point. For example, explain only the JavaScript, REST API, MongoDB, Shopify, or database skills that you genuinely had before beginning. Then explain the new learning that you can support with your project evidence.</p>
+
+<p>One important learning area was data modelling. The prototype required a distinction between a customer <code>NotificationRequest</code>, an incoming <code>ProcessedInventoryEvent</code>, a unique delivery ID, a request status, and an external inventory reference. Another learning area was reliability: the duplicate-event test showed why idempotency is important, because a repeated event must not repeat a state-changing action.</p>
+
+<p>Reflect honestly on the actual challenges. The evidence log records a Mongoose index conflict and an initial matching problem caused by a non-matching inventory item ID. Also explain what you learned about scope management when the Ethereal SMTP connection failed. The ethical response was to record the limitation, not to claim success or spend unlimited time debugging an external integration.</p>
+
+<h2>10. Future Improvements</h2>
+
+<p>The current MVP has clear limitations that define future work:</p>
+
+<ul>
+    <li><strong>Email Verification:</strong> The local SMTP socket issue needs to be resolved to capture proof of email generation.</li>
+    <li><strong>Live Webhooks:</strong> The project used a controlled test fixture. Future work should register a real Shopify webhook and verify its HMAC signature to prove live integration.</li>
+    <li><strong>Reconciliation:</strong> Because Shopify (n.d.)<a href="#ref-3">[3]</a> explains that webhook delivery is not guaranteed, a production system would need a scheduled job to reconcile pending requests against actual Shopify inventory.</li>
+    <li><strong>Production Security:</strong> This development prototype uses invented data. A real app would need formal privacy reviews, rate limiting, and secure secret management.</li>
+</ul>
+
+<p>This prototype makes the core event-processing, data, and reliability decisions visible. It provides a bounded foundation for future development, while keeping unfinished email delivery and live webhook behaviour clearly identified as future work.</p>
+
+<hr>
+
+<h2>References</h2>
+
+<p id="ref-1">[1] Dadzie, K.Q. and Winston, E. (2007) ‘Consumer response to stock-out in the online supply chain’, <em>International Journal of Physical Distribution & Logistics Management</em>, 37(1), pp. 19–42. Available at: https://www.emerald.com/ijpdlm/article/37/1/19/162646 (Accessed: 20 July 2026). doi: 10.1108/09600030710723309.</p>
+<p id="ref-2">[2] Kim, D.Y., Knight, B.S. and Mitrofanov, D. (2024) ‘How Online Retailers Can Avoid Costly Out-of-Stock Issues’, <em>Harvard Business Review</em>, 3 October. Available at: https://hbr.org/2024/10/how-online-retailers-can-avoid-costly-out-of-stock-issues (Accessed: 20 July 2026).</p>
+<p id="ref-3">[3] Shopify (n.d.) <em>About webhooks</em>. Available at: https://shopify.dev/docs/apps/build/webhooks (Accessed: 20 July 2026).</p>
+<p id="ref-4">[4] Notify Me! (n.d.) <em>Notify Me! for back in stock alert, backorder, out of stock waiting list, low stock alert & wishlist</em>. Shopify App Store. Available at: https://apps.shopify.com/preorder-back-in-stock (Accessed: 20 July 2026).</p>
+<p id="ref-5">[5] Swym Corporation (n.d.) <em>Swym Back in Stock Alerts</em>. Shopify App Store. Available at: https://apps.shopify.com/watchlist (Accessed: 20 July 2026).</p>
+<p id="ref-6">[6] Appikon Software Pvt Ltd (n.d.) <em>Appikon – Back In Stock</em>. Shopify App Store. Available at: https://apps.shopify.com/customer-back-in-stock-alert-user-notification-app (Accessed: 20 July 2026).</p>
+<p id="ref-7">[7] Nodemailer (n.d.) <em>Testing with Ethereal</em>. Available at: https://nodemailer.com/guides/testing-with-ethereal (Accessed: 20 July 2026).</p>
+<p id="ref-8">[8] Office of the Australian Information Commissioner (2026) <em>Chapter 3: APP 3 Collection of solicited personal information</em>. Available at: https://www.oaic.gov.au/privacy/australian-privacy-principles/australian-privacy-principles-guidelines/chapter-3-app-3-collection-of-solicited-personal-information (Accessed: 20 July 2026).</p>
+<p id="ref-9">[9] Office of the Australian Information Commissioner (2019) <em>Chapter 5: APP 5 Notification of the collection of personal information</em>. Available at: https://www.oaic.gov.au/privacy/australian-privacy-principles/australian-privacy-principles-guidelines/chapter-5-app-5-notification-of-the-collection-of-personal-information (Accessed: 20 July 2026).</p>
+<p id="ref-11">[11] World Wide Web Consortium (n.d.) <em>Understanding SC 3.3.2: Labels or Instructions (Level A)</em>. Available at: https://www.w3.org/WAI/WCAG22/Understanding/labels-or-instructions.html (Accessed: 20 July 2026).</p>
+<p id="ref-12">[12] MongoDB (n.d.) <em>Documents</em>. Available at: https://www.mongodb.com/docs/manual/core/document/ (Accessed: 20 July 2026).</p>
+<p id="ref-13">[13] MongoDB (n.d.) <em>Unique Indexes</em>. Available at: https://www.mongodb.com/docs/manual/core/index-unique/ (Accessed: 20 July 2026).</p>
+<p id="ref-14">[14] OpenJS Foundation (n.d.) <em>About Node.js</em>. Available at: https://nodejs.org/en/about (Accessed: 20 July 2026).</p>
+<p id="ref-15">[15] Pallets Projects (n.d.) <em>Welcome to Flask</em>. Available at: https://flask.palletsprojects.com/ (Accessed: 20 July 2026).</p>
+<p id="ref-16">[16] Express.js (n.d.) <em>Using middleware</em>. Available at: https://expressjs.com/en/5x/guide/using-middleware/ (Accessed: 20 July 2026).</p>
+<p id="ref-17">[17] PostgreSQL Global Development Group (n.d.) <em>5.5 Constraints</em>. Available at: https://www.postgresql.org/docs/current/ddl-constraints.html (Accessed: 20 July 2026).</p>
+<p id="ref-18">[18] Shopify (n.d.) <em>Dev stores</em>. Available at: https://shopify.dev/docs/apps/build/dev-dashboard/stores/development-stores (Accessed: 20 July 2026).</p>
