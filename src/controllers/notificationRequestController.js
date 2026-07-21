@@ -1,36 +1,51 @@
 import { NotificationRequest } from '../models/NotificationRequest.js';
 
-const neutralAcceptedResponse = {
-  message: 'Your notification request has been received. If an active request already exists, another will not be created.'
+const acceptedResponse = {
+  message:
+    'Your notification request has been received. If an active request already exists, another request will not be created.'
 };
 
 /**
- * Persists a validated request. The same neutral response is intentionally
- * returned after a duplicate-key collision so the public endpoint does not
- * reveal whether a supplied email address already has an active request.
+ * Creates a new notification request.
+ *
+ * The same response is returned for both successful creations and duplicate
+ * requests. This prevents the API from revealing whether a particular email
+ * address already has an active notification request.
  */
-export async function createNotificationRequest(req, res, next) {
+export async function createNotificationRequest( req, res, next) {
   try {
-    const notificationRequest = await NotificationRequest.create({
-      ...req.notificationInput,
-      status: 'pending'
-    });
+    const notificationRequest =
+      await NotificationRequest.create({
+        ...req.notificationInput,
+        status: 'pending'
+      });
 
     console.info({
       event: 'notification_request_created',
-      requestId: notificationRequest._id.toString(),
-      variantId: notificationRequest.variantId
+      requestId:
+        notificationRequest._id.toString(),
+      variantId:
+        notificationRequest.variantId,
+      inventoryItemId:
+        notificationRequest.inventoryItemId
     });
 
-    return res.status(202).json(neutralAcceptedResponse);
+    return res.status(202).json(
+      acceptedResponse
+    );
   } catch (error) {
     if (error?.code === 11000) {
       console.info({
         event: 'notification_request_duplicate',
-        variantId: req.notificationInput.variantId
+        variantId:
+          req.notificationInput.variantId,
+        inventoryItemId:
+          req.notificationInput.inventoryItemId
       });
 
-      return res.status(202).json(neutralAcceptedResponse);
+      return res.status(202).json(
+        acceptedResponse
+      );
     }
 
     return next(error);

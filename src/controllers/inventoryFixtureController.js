@@ -1,37 +1,47 @@
 import { processInventoryEvent } from '../services/inventoryEventService.js';
 
 const outcomeMessages = {
-  processed: 'The controlled inventory event was processed.',
-  ignored: 'The controlled inventory event was recorded and ignored because available stock is not positive.',
-  duplicate: 'The controlled inventory event was already recorded. No request state was changed.'
+  processed:
+    'The inventory event was processed successfully.',
+
+  ignored:
+    'The inventory event was recorded but ignored because available stock is not greater than zero.',
+
+  duplicate:
+    'The inventory event was already processed previously.'
 };
 
 /**
- * Development-only adapter. It translates the shared service result into a
- * safe HTTP response and never returns notification email addresses, message
- * IDs or Ethereal preview URLs to a client.
+ * Development-only endpoint used to simulate Shopify inventory updates.
+ *
+ * This controller:
+ * - records inventory events
+ * - matches pending notification requests
+ * - transitions matching requests to "matched"
+ *
+ * Email delivery is intentionally excluded from this prototype and will be
+ * implemented in a future iteration.
  */
-export async function createInventoryFixtureEvent(req, res, next) {
+export async function createInventoryFixtureEvent( req, res, next) {
   try {
-    const result = await processInventoryEvent(req.inventoryEventInput);
+    const result = await processInventoryEvent(
+      req.inventoryEventInput
+    );
 
     console.info({
       event: 'inventory_fixture_processed',
       deliveryId: result.deliveryId,
       outcome: result.outcome,
       matchedRequestCount: result.matchedRequestCount,
-      transitionedRequestCount: result.transitionedRequestCount,
-      emailSentCount: result.emailSentCount,
-      emailFailedCount: result.emailFailedCount
+      transitionedRequestCount: result.transitionedRequestCount
     });
 
     return res.status(200).json({
       message: outcomeMessages[result.outcome],
       outcome: result.outcome,
       matchedRequestCount: result.matchedRequestCount,
-      transitionedRequestCount: result.transitionedRequestCount,
-      emailSentCount: result.emailSentCount,
-      emailFailedCount: result.emailFailedCount
+      transitionedRequestCount:
+        result.transitionedRequestCount
     });
   } catch (error) {
     return next(error);

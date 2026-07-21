@@ -1,7 +1,6 @@
-import { env } from '../config/env.js';
-
 const allowedFields = new Set([
   'deliveryId',
+  'shopDomain',
   'inventoryItemId',
   'locationId',
   'available'
@@ -13,7 +12,12 @@ function addError(errors, field, message) {
   errors.push({ field, message });
 }
 
-function requiredIdentifier(value, field, errors, maximumLength) {
+function requiredIdentifier(
+  value,
+  field,
+  errors,
+  maximumLength
+) {
   if (typeof value !== 'string') {
     addError(errors, field, 'is required.');
     return '';
@@ -24,50 +28,102 @@ function requiredIdentifier(value, field, errors, maximumLength) {
   if (!cleaned) {
     addError(errors, field, 'is required.');
   } else if (cleaned.length > maximumLength) {
-    addError(errors, field, `must not exceed ${maximumLength} characters.`);
+    addError(
+      errors,
+      field,
+      `must not exceed ${maximumLength} characters.`
+    );
   } else if (!identifierPattern.test(cleaned)) {
-    addError(errors, field, 'contains unsupported characters.');
+    addError(
+      errors,
+      field,
+      'contains unsupported characters.'
+    );
   }
 
   return cleaned;
 }
 
 /**
- * Accepts only an invented development-fixture event. The public customer
- * request route does not use this middleware and cannot submit inventory IDs.
+ * Validates an invented inventory event used for
+ * development testing and Bruno requests.
  */
-export function validateInventoryFixtureEvent(req, res, next) {
+export function validateInventoryFixtureEvent(
+  req,
+  res,
+  next
+) {
   const body = req.body;
 
-  if (!body || Array.isArray(body) || typeof body !== 'object') {
+  if (
+    !body ||
+    Array.isArray(body) ||
+    typeof body !== 'object'
+  ) {
     return res.status(400).json({
-      message: 'The request body must be a JSON object.'
+      message:
+        'The request body must be a JSON object.'
     });
   }
 
   const errors = [];
-  const unexpectedFields = Object.keys(body).filter((field) => !allowedFields.has(field));
+
+  const unexpectedFields =
+    Object.keys(body).filter(
+      (field) => !allowedFields.has(field)
+    );
 
   if (unexpectedFields.length > 0) {
-    addError(errors, 'request', 'contains unsupported fields.');
+    addError(
+      errors,
+      'request',
+      'contains unsupported fields.'
+    );
   }
 
-  const deliveryId = requiredIdentifier(body.deliveryId, 'deliveryId', errors, 255);
+  const deliveryId = requiredIdentifier(
+    body.deliveryId,
+    'deliveryId',
+    errors,
+    255
+  );
+
+  const shopDomain = requiredIdentifier(
+    body.shopDomain,
+    'shopDomain',
+    errors,
+    253
+  ).toLowerCase();
+
   const inventoryItemId = requiredIdentifier(
     body.inventoryItemId,
     'inventoryItemId',
     errors,
     128
   );
-  const locationId = requiredIdentifier(body.locationId, 'locationId', errors, 128);
 
-  if (typeof body.available !== 'number' || !Number.isInteger(body.available)) {
-    addError(errors, 'available', 'must be an integer.');
+  const locationId = requiredIdentifier(
+    body.locationId,
+    'locationId',
+    errors,
+    128
+  );
+
+  if (
+    typeof body.available !== 'number' ||
+    !Number.isInteger(body.available)
+  ) {
+    addError(
+      errors,
+      'available',
+      'must be an integer.'
+    );
   }
 
   if (errors.length > 0) {
     return res.status(400).json({
-      message: 'Please correct the controlled fixture event details.',
+      message:
+        'Please correct the inventory fixture event details.',
       errors
     });
   }
@@ -75,7 +131,7 @@ export function validateInventoryFixtureEvent(req, res, next) {
   req.inventoryEventInput = Object.freeze({
     deliveryId,
     topic: 'inventory_levels/update',
-    shopDomain: env.shopDomain,
+    shopDomain,
     inventoryItemId,
     locationId,
     available: body.available,

@@ -1,9 +1,25 @@
 import { Router } from 'express';
-import { createNotificationRequest } from '../controllers/notificationRequestController.js';
-import { validateNotificationRequest } from '../middleware/validateNotificationRequest.js';
 
-const notificationRoutes = Router();
+import {
+  createNotificationRequest
+} from '../controllers/notificationRequestController.js';
 
-notificationRoutes.post('/', validateNotificationRequest, createNotificationRequest);
+import {
+  validateNotificationRequest
+} from '../middleware/validateNotificationRequest.js';
 
-export default notificationRoutes;
+const router = Router();
+
+/**
+ * Creates a back-in-stock notification request.
+ *
+ * Example:
+ * POST /api/notifications
+ */
+router.post(
+  '/',
+  validateNotificationRequest,
+  createNotificationRequest
+);
+
+export default router;

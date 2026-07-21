@@ -2,7 +2,12 @@ import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
-const eventStatuses = ['received', 'processed', 'ignored', 'failed'];
+const eventStatuses = [
+  'received',
+  'processed',
+  'ignored',
+  'failed'
+];
 
 const processedInventoryEventSchema = new Schema(
   {
@@ -10,14 +15,16 @@ const processedInventoryEventSchema = new Schema(
       type: String,
       required: true,
       trim: true,
-      maxlength: 255,
+      maxlength: 255
     },
+
     topic: {
       type: String,
       required: true,
       trim: true,
       maxlength: 100
     },
+
     shopDomain: {
       type: String,
       required: true,
@@ -25,18 +32,14 @@ const processedInventoryEventSchema = new Schema(
       lowercase: true,
       maxlength: 253
     },
+
     inventoryItemId: {
       type: String,
       required: true,
       trim: true,
       maxlength: 128
     },
-    locationId: {
-      type: String,
-      required: true,
-      trim: true,
-      maxlength: 128
-    },
+
     available: {
       type: Number,
       required: true,
@@ -45,10 +48,13 @@ const processedInventoryEventSchema = new Schema(
         message: 'available must be an integer.'
       }
     },
+
     receivedAt: {
       type: Date,
+      default: Date.now,
       required: true
     },
+
     processingStatus: {
       type: String,
       enum: eventStatuses,
@@ -65,12 +71,13 @@ const processedInventoryEventSchema = new Schema(
 processedInventoryEventSchema.index(
   { deliveryId: 1 },
   {
-    name: 'unique_inventory_event_delivery',
-    unique: true
+    unique: true,
+    name: 'unique_inventory_event_delivery'
   }
 );
 
-export const ProcessedInventoryEvent = mongoose.model(
-  'ProcessedInventoryEvent',
-  processedInventoryEventSchema
-);
+export const ProcessedInventoryEvent =
+  mongoose.model(
+    'ProcessedInventoryEvent',
+    processedInventoryEventSchema
+  );

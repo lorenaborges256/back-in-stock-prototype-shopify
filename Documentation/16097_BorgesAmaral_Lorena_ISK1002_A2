@@ -20,6 +20,8 @@
 
 <h2>3. Technical Issues and Design Choices</h2>
 
+The ERD includes fields related to email delivery, such as emailMessageId and sentAt. These features were intentionally excluded from the prototype implementation. The purpose of the project was to validate the data model, notification registration workflow, and inventory-event matching process. Email delivery introduces additional complexity, including SMTP configuration, retry policies, bounce handling, and security considerations. Future work could integrate SendGrid, AWS SES, or another email provider to deliver real notifications after a matching inventory event is detected.
+
 <p>Building a reliable notification system requires solving several technical problems:</p>
 
 <ul>

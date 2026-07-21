@@ -74,26 +74,15 @@ const notificationRequestSchema = new Schema(
     },
     status: {
       type: String,
-      enum: requestStatuses,
+      enum: [ 
+        'pending',
+        'matched',
+        'cancelled',
+        'failed'
+    ],
       default: 'pending',
       required: true
     },
-    sentAt: {
-      type: Date,
-      default: undefined
-    },
-    emailMessageId: {
-      type: String,
-      trim: true,
-      maxlength: 255,
-      default: undefined
-    },
-    lastErrorCode: {
-      type: String,
-      trim: true,
-      maxlength: 100,
-      default: undefined
-    }
   },
   {
     timestamps: true,
