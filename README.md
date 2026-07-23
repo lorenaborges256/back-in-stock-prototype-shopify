@@ -40,7 +40,7 @@ Not implemented:
 - Shopify webhooks
 - Email delivery
 
-Email delivery has intentionally been excluded from the prototype and is planned as a future enhancement.
+Those features were intentionally been excluded from the prototype and are planned as a future enhancement.
 
 ---
 
