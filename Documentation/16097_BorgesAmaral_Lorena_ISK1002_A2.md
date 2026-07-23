@@ -2,7 +2,7 @@
 
 ## Introduction
 
-One of the most common frustrations in e-commerce occurs when a customer finds a product they want to purchase, only to discover that it is out of stock. In many online stores, customers must either repeatedly check the website for availability updates or abandon the purchase altogether.
+One of the most common frustrations for e-commerce retailers is losing a sale because a customer finds that the product they wish to purchase is out of stock. In some market niches, customers may return periodically to check whether the item has been restocked. In others, however, customers abandon the purchase altogether and turn to a competitor, often never returning to the original website.
 
 To explore this problem, I developed a prototype Back-in-Stock Notification System using Node.js, Express, and MongoDB. The prototype was designed from an Entity Relationship Diagram (ERD) and focuses on the core workflow of registering notification requests and matching those requests against future inventory updates.
 
@@ -10,45 +10,47 @@ This article explains the problem addressed by the project, the technical and et
 
 ## 1. The Problem: Losing Customers to Stockouts
 
-Stockouts are a common problem in e-commerce. When a product is unavailable, customers may leave the store and buy from a competitor. Dadzie and Winston (2007) [[1]](#ref-1) found that stockouts can negatively affect a customer's assessment of an online transaction and their intention to buy again. 
+Stockouts are a common problem in e-commerce. When a product is unavailable, customers may leave the store and buy from a competitor. Dadzie and Winston (2007) [1] found that stockouts can negatively affect a customer's assessment of an online transaction and their intention to buy again. 
 
 ![Shopify product page displaying an Ice variant product in a sold out state with a disabled Sold Out button, demonstrating the customer experience when inventory is unavailable](../_img/backInStock_ProductSoldOut_button.png) *Figure 1. Product Variant - Ice - Unavailable, Sold Out Button*
 
 To address this, merchants need a way to tell customers when a product is available again. This project created a Minimum Viable Product (MVP) prototype. It uses a Node.js, Express server, and a MongoDB database. It uses invented data and a controlled test event to simulate a restock, focusing on the core logic rather than building a full commercial app.
 
-![Future impletation for Shopify product page displaying an Ice variant product in a sold out state with a Notifyme button, demonstrating the customer experience](../_img/backInStock_ProductSoldOut_NotifymeButton.png) *Figure 2. Product Variant - Ice - Unavailable, but now with Notifyme Button*
+![Future impletation for Shopify product page displaying an Ice variant product in a sold out state with a Notifyme button, demonstrating the customer experience](../_img/backInStock_ProductSoldOut_NotifymeButton.png) *Figure 2. Product Variant - Ice - Unavailable, but now with Notify me Button*
 
 
 ## 2. Existing Industry Solutions
 
 
-Existing Shopify App Store listings from Notify Me! [[2]](#ref-2), Swym Corporation (n.d.)[[3]](#ref-3), and Appikon Software Pvt Ltd (n.d.) [[4]](#ref-4) show that commercial back-in-stock products already exist. 
+Existing Shopify App Store listings from Notify Me! [2], Swym Corporation (n.d.)[3], and Appikon Software Pvt Ltd (n.d.) [4] show that commercial back-in-stock products already exist. 
 
-These commercial apps offer many features like SMS alerts, analytics, and theme customization. This prototype project does not try to compete with them. Instead, it deliberately reduces the scope to study how the core event and data workflow operates.
+These commercial apps offer many features like SMS alerts, analytics, and theme customization. But frequently they offer much more than a store needs, and charge for all those features. It can be expensive for a small store.
+
+This prototype project does not try to compete with them. Instead, it deliberately reduces the scope to study how the core event and data workflow operates.
 
 ## 3. Technical Issues and Design Choices
 
-Building a reliable notification system requires solving several technical problems:
+To keep the scope manageable and deliver a feasible prototype, this application implements only the backend logic for a stock notification system. The prototype does not send notification emails; instead, it focuses on detecting when a customer has requested a notification and determining whether a positive inventory event should trigger that request. Despite its reduced scope, the system must solve several important technical challenges:
 
-- **Event Duplication:** The design must prevent a repeated delivery from repeating a state-changing action. The controlled event-processing path saves a `ProcessedInventoryEvent` with a unique `deliveryId`. Testing showed that a duplicate event was correctly recognized and did not cause a second request transition. This was addressed through MongoDB uniqueness constraints and application-level validation.
+- **Input Validation:** Customers must provide a valid email address and consent to its use for future notifications. To prevent invalid data from entering the system, validation middleware is applied before any data is written to MongoDB. Requests containing malformed email addresses or unsupported fields are rejected with an HTTP 400 response.
 
-- **Input Validation:** The system must reject bad data. To reduce these risks, validation middleware was implemented before any data is written to MongoDB.Controlled tests confirmed that invalid inventory values or unsupported fields returned an HTTP 400 error.
+- **Event Duplication:** A customer should only be able to create one notification request for a specific product variant. This requirement is enforced through MongoDB uniqueness constraints combined with application-level validation, preventing duplicate records from being created.
 
-- **Duplicate Inventory Events** Inventory systems frequently generate duplicate or repeated events. If the same inventory update is processed multiple times, notification records may be incorrectly updated more than once. To mitigate this issue, each inventory event receives a unique delivery identifier, which is stored and checked before processing.
+- **Duplicate Inventory Events** Inventory systems may generate the same update event more than once. If duplicate events are processed repeatedly, notification requests could be updated incorrectly. To address this issue, each inventory event is assigned a unique deliveryId, which is stored and checked before processing. Events that have already been processed are safely ignored.
 
-- **Event Processing:** An inventory event must only consider requests for the exact product variant that was restocked. The controlled processing logic matches requests using the `NotificationRequest`, the specific `inventoryItemId`, and a `ProcessedInventoryEvent`.
+- **Event Processing:** An inventory update must only affect notification requests related to the exact product variant that has been restocked. The processing logic uses the `NotificationRequest`, the corresponding `inventoryItemId`, and the `ProcessedInventoryEvent` record to ensure that only relevant requests are considered.
 
 ## 4. Ethical and Privacy Considerations
 
-A notification system handles personal data (email addresses), so it must be designed ethically. While this prototypw uses only invented test data, several ethical concerns are still relevant.
+A notification system handles personal data (email addresses), so it must be designed ethically. While this prototype uses only invented test data, several ethical concerns are still relevant.
 
-- **Data Minimization:** The MVP data model is limited to the email address needed for a one-time notification, plus product references and operational timestamps. It does not require a phone number, date of birth, or payment details. This design aligns with the Australian Privacy Principles (APP 3), for which the Office of the Australian Information Commissioner (2026) [[5]](#ref-5) states that collection must be reasonably necessary.
+- **Data Minimization:** The MVP data model is limited to the email address needed for a one-time notification, plus product references and operational timestamps. It does not require a phone number, date of birth, or payment details. This design aligns with the Australian Privacy Principles (APP 3), for which the Office of the Australian Information Commissioner (2026) [5] states that collection must be reasonably necessary.
 
-- **Purpose and Transparency:** The form must clearly state that the email is only for a one-time notification. It should not automatically subscribe the user to general marketing, consistent with the Office of the Australian Information Commissioner (2019) [[6]](#ref-6).
+- **Purpose and Transparency:** The form must clearly state that the email is only for a one-time notification. It should not automatically subscribe the user to general marketing, consistent with the Office of the Australian Information Commissioner (2019) [6].
 
 - **Security:** Secrets (like database passwords) must be kept out of the code repository. They are loaded using environment variables.
 
-- **Accessibility:** The MVP requirements specify clear labels, understandable errors, keyboard operation, visible focus, and text-based status feedback. These are design requirements informed by World Wide Web Consortium guidance (n.d.) [7](#ref-7). Full accessibility conformance is not claimed because a formal audit has not yet been completed.
+- **Accessibility:** The MVP requirements specify clear labels, understandable errors, keyboard operation, visible focus, and text-based status feedback. These are design requirements informed by World Wide Web Consortium guidance (n.d.) [7]. Full accessibility conformance is not claimed because a formal audit has not yet been completed.
 
 
 ## 5. Solution Design
@@ -63,13 +65,19 @@ The system needs to remember two main things: the customer's request and the res
 
 ![Entity Relationship Diagram showing the Back-in-Stock Notification System with NotificationRequest and ProcessedInventoryEvent collections, their attributes, and relationships](../_img/backinstockdatamodel.drawio.png) *Figure 3. Back-in-Stock System Data Model: Entity Relationship Diagram*
 
-As shown in Figure 3, the ERD separates customer notification requests from inventory events, ensuring each concern has its own data structure.
+As shown in Figure 3, the ERD separates customer notification requests from inventory events. The `NotificationRequest` collection stores customer details and the product information needed to identify the item being tracked. The `ProcessedInventoryEvent` collection stores inventory updates and prevents duplicate processing. The relationship between the two collections is established through the `inventoryItemId`, allowing the system to identify which notification requests should be triggered when stock becomes available. While the prototype creates test data internally, these product and inventory identifiers are intended to originate from Shopify in a production environment.
 
 ### Workflow
 
-The prototype implements a controlled event-processing workflow designed to ensure data integrity and reliable request handling. When an inventory event is received, the Express API first validates the incoming payload to prevent malformed or invalid data from entering the system. The event is then checked against previously processed records using its unique deliveryId, preventing the same inventory update from being processed more than once. If the event is valid and not a duplicate, the system evaluates whether stock is available and searches for matching NotificationRequest records using the associated inventoryItemId. When matching pending requests are found, the system updates their status from pending to matched, indicating that the customer has been identified as eligible for a future back-in-stock notification. This approach demonstrates the core business logic of inventory-event matching while leaving notification delivery as a future enhancement.
+The prototype implements a controlled request-submission workflow to ensure that notification requests are complete, valid, and unique. As you can see in the Figure 4, when a customer submits a request to be notified about a product becoming available again, the Express API first validates the submitted data, including the email address, consent flag, and product identifiers. The system then checks whether an active notification request already exists for the same customer, shop, and product variant. If a duplicate request is detected, the request is rejected to prevent redundant records. Otherwise, a new `NotificationRequest` is created with a status of pending, indicating that the customer is waiting for a matching inventory event. This workflow ensures data quality, prevents duplicate requests, and prepares notification records for subsequent inventory-event processing.
 
-![Dataflow diagram showing inventory event processing workflow: inventory event input → validation → duplicate check → matching against notification requests → request status update](../_img/InventoryEventDataflow.drawio.png) *Figure 4. Inventory Event Processing Workflow: Core Data Flow*
+![Dataflow diagram showing Notification Request processing workflow: form input → validation → duplicate check → Notification status update](../_img/NotificationRequestDataflow.drawio.png)
+*Figure 4. Notification Request Processing Workflow: Core Data Flow*
+
+In the Figure 5, you see when an inventory event is received, the Express API first validates the payload to prevent malformed or invalid data from entering the system. The event is then checked against previously processed records using its unique `deliveryId`, ensuring that duplicate inventory updates are ignored. If the event is valid and indicates that stock is available, the system searches for matching `NotificationRequest` records using the corresponding `inventoryItemId`. Any pending requests associated with the restocked item are updated from `pending` to `matched`, indicating that the customer has become eligible for a future back-in-stock notification. This workflow demonstrates the core business process of matching inventory events to customer requests while leaving email delivery outside the scope of the prototype.
+
+![Dataflow diagram showing inventory event processing workflow: inventory event input → validation → duplicate check → matching against notification requests → request status update](../_img/InventoryEventDataflow.drawio.png)
+*Figure 5. Inventory Event Processing Workflow: Core Data Flow*
 
 ## 6. Technology Selection
 
@@ -77,11 +85,11 @@ The project uses a small JavaScript/Node.js/MongoDB architecture. React was cons
 
 ### Node.js
 
-The OpenJS Foundation (n.d.) [[8]](#ref-8) describes Node.js as an asynchronous, event-driven environment. Node.js was selected for this project because it is widely used for event-driven applications and REST APIs, making it particularly well suited to an inventory notification system where events drive the core workflow. Key benefits include a non-blocking architecture that handles concurrent requests efficiently, a large ecosystem of packages via npm, strong community support, and excellent integration with JavaScript throughout the stack. Because the prototype's core problem domain centers on event-based processing, Node.js aligns naturally with this architecture.
+The OpenJS Foundation (n.d.) [8] describes Node.js as an asynchronous, event-driven environment. Node.js was selected for this project because it is widely used for event-driven applications and REST APIs, making it particularly well suited to an inventory notification system where events drive the core workflow. Key benefits include a non-blocking architecture that handles concurrent requests efficiently, a large ecosystem of packages via npm, strong community support, and excellent integration with JavaScript throughout the stack. Because the prototype's core problem domain centers on event-based processing, Node.js aligns naturally with this architecture.
 
 ### Express
 
-Express.js (n.d.) [[9]](#ref-9) provides routing and middleware capabilities for building web servers and APIs. Express was chosen because it provides a lightweight framework that reduces configuration overhead and lets developers focus on business logic rather than framework complexity. Key benefits include minimal configuration requirements, simple and intuitive routing, built-in middleware support for handling cross-cutting concerns, and extensive documentation and community examples. This combination made it straightforward to implement the notification request and inventory event endpoints required by the MVP.
+Express.js (n.d.) [9] provides routing and middleware capabilities for building web servers and APIs. Express was chosen because it provides a lightweight framework that reduces configuration overhead and lets developers focus on business logic rather than framework complexity. Key benefits include minimal configuration requirements, simple and intuitive routing, built-in middleware support for handling cross-cutting concerns, and extensive documentation and community examples. This combination made it straightforward to implement the notification request and inventory event endpoints required by the MVP.
 
 ### MongoDB
 
@@ -150,20 +158,20 @@ While these features remain outside the scope of the current MVP, the existing p
 
 ## References
 
-[[1]](#ref-1) Dadzie, K.Q. and Winston, E. (2007) ‘Consumer response to stock-out in the online supply chain’, International Journal of Physical Distribution & Logistics Management, 37(1), pp. 19–42. Available at: https://www.emerald.com/ijpdlm/article/37/1/19/162646 (Accessed: 20 July 2026).
+[1] Dadzie, K.Q. and Winston, E. (2007) ‘Consumer response to stock-out in the online supply chain’, International Journal of Physical Distribution & Logistics Management, 37(1), pp. 19–42. Available at: https://www.emerald.com/ijpdlm/article/37/1/19/162646 (Accessed: 20 July 2026).
 
-[[2]](#ref-2) Notify Me! (n.d.) Notify Me! for back in stock alert, backorder, out of stock waiting list, low stock alert & wishlist. Shopify App Store. Available at: https://apps.shopify.com/preorder-back-in-stock (Accessed: 20 July 2026).
+[2] Notify Me! (n.d.) Notify Me! for back in stock alert, backorder, out of stock waiting list, low stock alert & wishlist. Shopify App Store. Available at: https://apps.shopify.com/preorder-back-in-stock (Accessed: 20 July 2026).
 
-[[3]](#ref-3) Swym Corporation (n.d.) Swym Back in Stock Alerts. Shopify App Store. Available at: https://apps.shopify.com/watchlist (Accessed: 20 July 2026).
+[3] Swym Corporation (n.d.) Swym Back in Stock Alerts. Shopify App Store. Available at: https://apps.shopify.com/watchlist (Accessed: 20 July 2026).
 
-[[4]](#ref-4) Appikon Software Pvt Ltd (n.d.) Appikon – Back In Stock. Shopify App Store. Available at: https://apps.shopify.com/customer-back-in-stock-alert-user-notification-app (Accessed: 20 July 2026).
+[4] Appikon Software Pvt Ltd (n.d.) Appikon – Back In Stock. Shopify App Store. Available at: https://apps.shopify.com/customer-back-in-stock-alert-user-notification-app (Accessed: 20 July 2026).
 
-[[5]](#ref-5) Office of the Australian Information Commissioner (2026) Chapter 3: APP 3 Collection of solicited personal information. Available at: https://www.oaic.gov.au/privacy/australian-privacy-principles/australian-privacy-principles-guidelines/chapter-3-app-3-collection-of-solicited-personal-information (Accessed: 20 July 2026).
+[5] Office of the Australian Information Commissioner (2026) Chapter 3: APP 3 Collection of solicited personal information. Available at: https://www.oaic.gov.au/privacy/australian-privacy-principles/australian-privacy-principles-guidelines/chapter-3-app-3-collection-of-solicited-personal-information (Accessed: 20 July 2026).
 
-[[6]](#ref-6) Office of the Australian Information Commissioner (2019) Chapter 5: APP 5 Notification of the collection of personal information. Available at: https://www.oaic.gov.au/privacy/australian-privacy-principles/australian-privacy-principles-guidelines/chapter-5-app-5-notification-of-the-collection-of-personal-information (Accessed: 20 July 2026).
+[6] Office of the Australian Information Commissioner (2019) Chapter 5: APP 5 Notification of the collection of personal information. Available at: https://www.oaic.gov.au/privacy/australian-privacy-principles/australian-privacy-principles-guidelines/chapter-5-app-5-notification-of-the-collection-of-personal-information (Accessed: 20 July 2026).
 
-[[7]](#ref-7) World Wide Web Consortium (n.d.) Understanding SC 3.3.2: Labels or Instructions (Level A). Available at: https://www.w3.org/WAI/WCAG22/Understanding/labels-or-instructions.html (Accessed: 20 July 2026).
+[7]World Wide Web Consortium (n.d.) Understanding SC 3.3.2: Labels or Instructions (Level A). Available at: https://www.w3.org/WAI/WCAG22/Understanding/labels-or-instructions.html (Accessed: 20 July 2026).
 
-[[8]](#ref-8) OpenJS Foundation (n.d.) About Node.js. Available at: https://nodejs.org/en/about (Accessed: 20 July 2026).
+[8] OpenJS Foundation (n.d.) About Node.js. Available at: https://nodejs.org/en/about (Accessed: 20 July 2026).
 
-[[9]](#ref-9) Express.js (n.d.) Using middleware. Available at: https://expressjs.com/en/5x/guide/using-middleware/ (Accessed: 20 July 2026).
+[9] Express.js (n.d.) Using middleware. Available at: https://expressjs.com/en/5x/guide/using-middleware/ (Accessed: 20 July 2026).
