@@ -1,10 +1,12 @@
 # Building a Privacy-Conscious Back-in-Stock Notification Prototype for Shopify with Node.js, Express, and MongoDB
 
+## Author: Lorena Borges Amaral
+
 ## Introduction
 
 One of the most common frustrations for e-commerce retailers is losing a sale because a customer finds that the product they wish to purchase is out of stock. In some market niches, customers may return periodically to check whether the item has been restocked. In others, however, customers abandon the purchase altogether and turn to a competitor, often never returning to the original website.
 
-To explore this problem, I developed a prototype Back-in-Stock Notification System using Node.js, Express, and MongoDB. The prototype was designed from an Entity Relationship Diagram (ERD) and focuses on the core workflow of registering notification requests and matching those requests against future inventory updates.
+To explore this problem, was developed a Minimum Viable Product (MVP) prototype Back-in-Stock Notification System using Node.js, Express, and MongoDB. The prototype was designed from an Entity Relationship Diagram (ERD) and focuses on the core workflow of registering notification requests and matching those requests against future inventory updates.
 
 This article explains the problem addressed by the project, the technical and ethical considerations involved, the implementation choices made, the lessons learned throughout development, and areas for future improvement.
 
@@ -14,23 +16,22 @@ Stockouts are a common problem in e-commerce. When a product is unavailable, cus
 
 ![Shopify product page displaying an Ice variant product in a sold out state with a disabled Sold Out button, demonstrating the customer experience when inventory is unavailable](../_img/backInStock_ProductSoldOut_button.png) *Figure 1. Product Variant - Ice - Unavailable, Sold Out Button*
 
-To address this, merchants need a way to tell customers when a product is available again. This project created a Minimum Viable Product (MVP) prototype. It uses a Node.js, Express server, and a MongoDB database. It uses invented data and a controlled test event to simulate a restock, focusing on the core logic rather than building a full commercial app.
+To address this, merchants need a way to tell customers when a product is available again. It uses a Node.js, Express server, and a MongoDB database. It uses invented data and a controlled test event to simulate a restock, focusing on the core logic rather than building a full commercial app.
 
 ![Future impletation for Shopify product page displaying an Ice variant product in a sold out state with a Notifyme button, demonstrating the customer experience](../_img/backInStock_ProductSoldOut_NotifymeButton.png) *Figure 2. Product Variant - Ice - Unavailable, but now with Notify me Button*
 
 
 ## 2. Existing Industry Solutions
 
+There are existing commercial apps available in Shopify App Store, such as Notify Me! Back in Stock Alert [2], Swym Corporation (n.d.)[3], and Appikon Software Pvt Ltd (n.d.) [4], that offer that back-in-stock products notification email and  offer other features like SMS alerts, analytics, and theme customization. But frequently they offer much more than a store needs, and charge for all those features. It can be expensive for a small store.
 
-Existing Shopify App Store listings from Notify Me! [2], Swym Corporation (n.d.)[3], and Appikon Software Pvt Ltd (n.d.) [4] show that commercial back-in-stock products already exist. 
-
-These commercial apps offer many features like SMS alerts, analytics, and theme customization. But frequently they offer much more than a store needs, and charge for all those features. It can be expensive for a small store.
+For example, Notify Me! Back in Stock Alert [2], developed by Notify Me!, provides “Notify Me,” “Pre-Order,” and “Wishlist” buttons for out-of-stock products. It can automatically send restock notifications via email, SMS, or push notifications, while also supporting D2C and B2B pre-orders with features such as discounts, customer notes, and partial payments. However, many of these features may be unnecessary for a small startup business. Although a free plan is available, it is limited to just 10 restock notifications. For most online stores, this allowance is likely insufficient, requiring merchants to pay a monthly subscription fee for a product whose extensive feature set they may only use minimally, making it a poor value proposition.
 
 This prototype project does not try to compete with them. Instead, it deliberately reduces the scope to study how the core event and data workflow operates.
 
 ## 3. Technical Issues and Design Choices
 
-To keep the scope manageable and deliver a feasible prototype, this application implements only the backend logic for a stock notification system. The prototype does not send notification emails; instead, it focuses on detecting when a customer has requested a notification and determining whether a positive inventory event should trigger that request. Despite its reduced scope, the system must solve several important technical challenges:
+To keep the scope manageable and deliver a feasible prototype, this application implements only the backend logic for a stock notification system. The front-end logic will be discuss in the Future Improvements.The prototype does not send notification emails; instead, it focuses on detecting when a customer has requested a notification and determining whether a positive inventory event should trigger that request. Despite its reduced scope, the system must solve several important technical challenges:
 
 - **Input Validation:** Customers must provide a valid email address and consent to its use for future notifications. To prevent invalid data from entering the system, validation middleware is applied before any data is written to MongoDB. Requests containing malformed email addresses or unsupported fields are rejected with an HTTP 400 response.
 
@@ -112,32 +113,19 @@ The project was planned using a Trello board with the stages **To Do**, **Doing*
 | Inventory-event processing and controlled fixture testing |  Demonstrate matching, validation, and duplicate-event handling. |
 | Email attempt, documentation, article drafting, and final review |Record outcomes honestly, prepare the README, write the article, and complete the evidence and privacy review. |
 
-### Testing Results
-
-Testing focused on the core event-processing logic using controlled, invented data. The following results are recorded in the project evidence log:
-
-| Test Scenario | Expected Result | Actual Result |
-|---------------|-----------------|---------------|
-| Positive matching event | Store the event and transition one matching pending request to `matched`. | Processed, matched 1, transitioned 1. |
-| Duplicate event delivery | Do not repeat the transition. | Duplicate recognized; no second transition. |
-| Zero stock event | Do not notify. | Ignored; request stayed pending. |
-| Invalid availability value | Reject request. | HTTP 400 error; no event recorded. |
-
 ## 8. Student Reflection, Limitations and What Was Attempted
 
-The first step in building a project is identifying a real problem that needs a solution. For this project, the problem came from my interest in e-commerce and customer experience. I wanted to create a notification system that could help customers know when an out-of-stock product becomes available again. At the same time, I wanted to apply concepts learned during my web development studies, including API development, data modelling, database design, and backend architecture.
+The first step in building a project is identifying a real problem that needs a solution. For this project, the problem came from my interest in e-commerce and customer experience. As I am a e-commerce retailer, I wanted to create a notification system that could help me to notify my customers know when an out-of-stock product becomes available again. At the same time, I wanted to apply concepts learned during my web development studies, including API development, data modelling, database design, and backend architecture.
 
 Before starting this project, I had already completed a full-stack MERN application. Because of that experience, I was already familiar with JavaScript, REST APIs, MongoDB, Express, and designing systems from an ERD. The challenge was not learning these technologies from the beginning, but rather thinking carefully about all the possible business rules and edge cases that could occur, even within a very small prototype scope. This project reinforced that designing a system is not only about building functionality but also about anticipating how the system should behave in different scenarios.
 
 One of the most important learning areas was data modelling. The prototype required a clear distinction between a customer NotificationRequest, an incoming ProcessedInventoryEvent, a unique delivery identifier, request statuses, and inventory references. Mapping these concepts from the ERD into MongoDB collections and Mongoose schemas helped me better understand how application requirements influence database design.
 
-Another important lesson was reliability in software systems. The project included duplicate-event detection using a unique deliveryId. This helped me understand the concept of idempotency, where the same event should not be able to change the system state multiple times if it is received more than once. Although the application is relatively small, this reflects a real-world concern in event-driven systems and distributed applications.
+Another important lesson was reliability in software systems. The project included duplicate-event detection using a unique `deliveryId`. This helped me understand the concept of idempotency, where the same event should not be able to change the system state multiple times if it is received more than once. Although the application is relatively small, this reflects a real-world concern in event-driven systems and distributed applications.
 
-During development, I encountered several technical challenges. One issue involved MongoDB and Mongoose indexes, where an index conflict prevented the application from behaving as expected. Another challenge occurred during inventory matching when notification requests could not be matched because the inventory item identifiers did not correspond correctly. Debugging these problems required careful testing, reviewing database records, and validating assumptions about the data model.
+The most significant technical challenge was the implementation of email delivery using `Nodemailer` and `Ethereal`. The original goal was to send notification emails when matching inventory became available. The test email component generated a valid `Ethereal` configuration that was consistent with `Nodemailer`, but transport verification failed during the local `Node.js` socket connection stage, producing ESOCKET and connection-related errors before authentication could occur. Additional testing confirmed that the target port was reachable, suggesting that the issue was occurring between the local `Node.js` environment and the `Nodemailer` transport configuration. To protect the project scope and timeline, further debugging was postponed. Therefore, no claim of successful email notification delivery is made in this project.
 
-The most significant technical challenge was the implementation of email delivery using Nodemailer and Ethereal. The original goal was to send notification emails when matching inventory became available. The test email component generated a valid Ethereal configuration that was consistent with Nodemailer, but transport verification failed during the local Node.js socket connection stage, producing ESOCKET and connection-related errors before authentication could occur. Additional testing confirmed that the target port was reachable, suggesting that the issue was occurring between the local Node.js environment and the Nodemailer transport configuration. To protect the project scope and timeline, further debugging was postponed. Therefore, no claim of successful email notification delivery is made in this project.
-
-This experience also taught me an important lesson about scope management. Initially, I intended to include a complete email notification workflow, but I realised that continuing to debug an external integration could take significant time away from the primary objective of the project. Instead, I focused on completing and validating the core business workflow. The current prototype successfully registers notification requests, validates incoming data, records inventory events, prevents duplicate processing, matches inventory against pending requests, and updates matching requests from pending to matched. Email delivery remains clearly documented as a future enhancement rather than being presented as a completed feature.
+This experience also taught me an important lesson about scope management. Initially, I intended to include a complete email notification workflow, but I realised that continuing to debug an external integration could take significant time away from the primary objective of the project. Instead, I focused on completing and validating the core business workflow.
 
 Overall, this project helped me strengthen my understanding of backend development, database design, validation, event processing, and API architecture. It also reinforced the importance of planning realistic project scopes, documenting limitations honestly, and prioritising core functionality before adding advanced features. While the prototype does not yet provide a complete production-ready solution, it successfully demonstrates the main workflow required for a back-in-stock notification system and provides a solid foundation for future development.
 
@@ -148,15 +136,9 @@ Although the prototype successfully demonstrates the core inventory-event matchi
 
 One important enhancement would be Shopify webhook integration. The current implementation uses a controlled inventory-event fixture to simulate stock updates. A future version should receive real inventory events directly from Shopify webhooks, allowing the system to operate in a production environment and respond automatically to stock changes.
 
-Another significant improvement is email notification delivery. The original objective included notifying customers when inventory becomes available; however, email delivery was deferred due to technical challenges encountered with the development SMTP environment. Future work could integrate a production-ready email service and extend the notification lifecycle from pending to matched and finally to sent.
+Another significant improvement is email notification delivery. The original objective included notifying customers when inventory becomes available. Future work could integrate a production-ready email service and extend the notification lifecycle from pending to matched and finally to sent.
 
-The project could also benefit from retry mechanisms for failed notifications. In a production system, temporary failures such as network interruptions or service outages should not prevent customers from receiving notifications. Implementing controlled retry logic would improve reliability and fault tolerance.
-
-Finally, queue-based event processing could be introduced to improve scalability and performance. Rather than processing inventory events immediately within the API request, events could be placed in a queue and processed asynchronously. This approach would support higher transaction volumes and better reflect modern event-driven architectures used in large-scale e-commerce platforms.
-
-While these features remain outside the scope of the current MVP, the existing prototype provides a solid foundation for future development. The core data model, validation rules, event-processing workflow, and request-matching logic have been implemented and tested, making it easier to extend the system with additional functionality in later iterations.
-
-## References
+## 10. References
 
 [1] Dadzie, K.Q. and Winston, E. (2007) ‘Consumer response to stock-out in the online supply chain’, International Journal of Physical Distribution & Logistics Management, 37(1), pp. 19–42. Available at: https://www.emerald.com/ijpdlm/article/37/1/19/162646 (Accessed: 20 July 2026).
 

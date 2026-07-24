@@ -12,9 +12,9 @@
 
 ## 1. Project Overview
 
-This project is a prototype REST API built with Node.js, Express, and MongoDB. It demonstrates how a back-in-stock notification workflow can be implemented from an Entity Relationship Diagram (ERD).
+This project is a Minimum Viable Product (MVP) prototype built with Node.js, Express, and MongoDB,implemented from an Entity Relationship Diagram (ERD).
 
-The application allows:
+The MVP prototype application allows:
 
 1. Customers to register interest in an out-of-stock product variant.
 2. Inventory events to be recorded.
