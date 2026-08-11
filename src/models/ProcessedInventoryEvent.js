@@ -40,6 +40,14 @@ const processedInventoryEventSchema = new Schema(
       maxlength: 128
     },
 
+    locationId: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 128
+    },
+
+
     available: {
       type: Number,
       required: true,
