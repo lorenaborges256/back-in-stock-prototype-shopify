@@ -47,6 +47,7 @@ const processedInventoryEventSchema = new Schema(
       maxlength: 128
     },
 
+
     available: {
       type: Number,
       required: true,
