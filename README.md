@@ -178,6 +178,7 @@ Body `<JSON>`
   "shopDomain": "sports-shop.local",
   "productId": "P100",
   "variantId": "V100",
+  "inventoryItemId": "INV100",
   "productTitle": "Nike Air Runner",
   "variantTitle": "Size 10",
   "productUrl": "https://sports-shop.local/products/nike-air-runner"
@@ -196,7 +197,7 @@ Response:
 Development-only endpoint.
 
 ```
-POST http://localhost:3001/api/test/inventory-event
+POST http://localhost:3001/api/inventory-events
 ```
 Example body:
 ```json
@@ -221,18 +222,49 @@ Example response:
 ## 6. Testing with Bruno
 
 - Step 1 - Create a notification request:
+Request
 ```
 POST http://localhost:3001/api/notifications
-```
-Use the sample JSON provided above.
-
-- Step 2 - Create an inventory event with the same `inventoryItemId`:
+``` 
+Body `<JSON>`
 ```json
 {
+  "firstName": "John",
+  "email": "john@example.com",
+  "notificationConsent": true,
+  "shopDomain": "sports-shop.local",
+  "productId": "P100",
+  "variantId": "V100",
   "inventoryItemId": "INV100",
+  "productTitle": "Nike Air Runner",
+  "variantTitle": "Size 10",
+  "productUrl": "https://sports-shop.local/products/nike-air-runner"
+}
+```
+Response:
+```json
+{
+  "message": "Your notification request has been received. If an active request already exists, another request will not be created."
+}
+``
+```
+
+- Step 2 - Create an inventory event with the same `inventoryItemId`:
+```
+POST http://localhost:3001/api/inventory-events
+
+```
+Body `<JSON>`
+```json
+{
+  "deliveryId": "EVT-001",
+  "shopDomain": "sports-shop.local",
+  "inventoryItemId": "INV100",
+  "locationId": "LOC001",
   "available": 5
 }
 ```
+
 - Step 3 - Observe the response on :
 
 ```json
@@ -242,7 +274,8 @@ Use the sample JSON provided above.
   "transitionedRequestCount": 1
 }
 ```
-In MongoDB Compass observe
+In MongoDB Compass, connect to the `back_in_stock_prototype` database and open the `notificationrequests` collection. Locate the notification request created with the test email address, such as `john@example.com`. Confirm that the document contains `inventoryItemId: "INV100"` and that its `status` has changed from `"pending"` to `"matched"` after the inventory event is processed. Then open the `processedinventoryevents` collection and confirm that an event with `deliveryId: "EVT-001"` has been recorded with `processingStatus: "processed"`. This verifies that the application saved the notification request, received the inventory update, and successfully matched the two records.
+
 
 ## 7. Code Documentation
 
