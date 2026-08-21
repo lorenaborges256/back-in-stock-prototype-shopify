@@ -1,0 +1,41 @@
+name: back-in-stock-prototype
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: back-in-stock-api:1.0.0
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: "3001"
+      MONGODB_URI: mongodb://mongo:27017/back_in_stock_prototype
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - back-in-stock-network
+
+  mongo:
+    image: mongo:8.0
+    restart: unless-stopped
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - back-in-stock-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  back-in-stock-network:
+    driver: bridge
