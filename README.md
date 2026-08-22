@@ -51,7 +51,7 @@ Those features were intentionally been excluded from the prototype and are plann
 
 ### ERD
 
-![ERD Back to Stock Prototype](_img\backinstockdatamodel.drawio.png)
+![ERD Back to Stock Prototype](./_img/backinstockdatamodel.drawio.png)
 
 BACK-TO-STOCK-PROTOTYPE-SHOPIFY
 ```
@@ -197,7 +197,6 @@ Response:
 {
   "message": "Your notification request has been received. If an active request already exists, another request will not be created."
 }
-``
 ```
 
 ### C. Create Inventory Event
@@ -254,7 +253,6 @@ Response:
 {
   "message": "Your notification request has been received. If an active request already exists, another request will not be created."
 }
-``
 ```
 
 - Step 2 - Create an inventory event with the same `inventoryItemId`:
@@ -357,7 +355,7 @@ docker compose down --volumes
 
 ### 7.5 Docker Architecture and Verification
 
-![Docker Compose Application Architecture Diagram](Documentation\DEV1004_AAD.drawio.png)
+![Docker Compose Application Architecture Diagram](./_img/DEV1004_AAD.drawio.png)
 
 The application architecture diagram in `Documentation/DEV1004_AAD.drawio` represents the Docker Compose environment. A Bruno client or browser sends HTTP requests to host port `3001`, which Docker forwards to the Node.js and Express API container. The API receives `NODE_ENV`, `PORT`, and `MONGODB_URI` at runtime. It connects to the MongoDB container through the private Docker network using `mongo:27017`. The MongoDB container stores persistent data in the named `mongodb_data` volume.
 
