@@ -1,0 +1,71 @@
+<mxfile host="Electron">
+  <diagram name="Page-1" id="Zicaru1-2USoBjx-K7qn">
+    <mxGraphModel dx="1398" dy="825" grid="0" gridSize="10" guides="0" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="N8Y7AB-o-vH7Z575GZtp-28" parent="1" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;dashPattern=8 8;align=center;verticalAlign=top;spacingLeft=2;direction=west;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;rotation=-90;" value="&lt;h2 style=&quot;margin-top: 10px; padding-left: 10px; margin-bottom: 0px;&quot;&gt;&lt;span style=&quot;--tw-border-spacing-x: 0; --tw-border-spacing-y: 0; --tw-translate-x: 0; --tw-translate-y: 0; --tw-rotate: 0; --tw-skew-x: 0; --tw-skew-y: 0; --tw-scale-x: 1; --tw-scale-y: 1; --tw-pan-x: ; --tw-pan-y: ; --tw-pinch-zoom: ; --tw-scroll-snap-strictness: proximity; --tw-gradient-from-position: ; --tw-gradient-via-position: ; --tw-gradient-to-position: ; --tw-ordinal: ; --tw-slashed-zero: ; --tw-numeric-figure: ; --tw-numeric-spacing: ; --tw-numeric-fraction: ; --tw-ring-inset: ; --tw-ring-offset-width: 0px; --tw-ring-offset-color: light-dark(#fff, #000000); --tw-ring-color: light-dark(#3b82f680, #4c89ec80); --tw-ring-offset-shadow: 0 0 #0000; --tw-ring-shadow: 0 0 #0000; --tw-shadow: 0 0 #0000; --tw-shadow-colored: 0 0 #0000; --tw-blur: ; --tw-brightness: ; --tw-contrast: ; --tw-grayscale: ; --tw-hue-rotate: ; --tw-invert: ; --tw-saturate: ; --tw-sepia: ; --tw-drop-shadow: ; --tw-backdrop-blur: ; --tw-backdrop-brightness: ; --tw-backdrop-contrast: ; --tw-backdrop-grayscale: ; --tw-backdrop-hue-rotate: ; --tw-backdrop-invert: ; --tw-backdrop-opacity: ; --tw-backdrop-saturate: ; --tw-backdrop-sepia: ; --tw-contain-size: ; --tw-contain-layout: ; --tw-contain-paint: ; --tw-contain-style: ; box-sizing: border-box; border: 0px solid rgb(229, 231, 235); scrollbar-color: transparent transparent; scrollbar-width: thin; outline: none; font-weight: 600; white-space: pre-wrap; color: rgb(0, 0, 0);&quot;&gt;&lt;font style=&quot;&quot; face=&quot;Helvetica&quot;&gt;3. Docker Compose Environment&lt;/font&gt;&lt;/span&gt;&lt;/h2&gt;" vertex="1">
+          <mxGeometry height="513" width="522" x="69" y="447" as="geometry" />
+        </mxCell>
+        <mxCell id="N8Y7AB-o-vH7Z575GZtp-1" parent="1" style="swimlane;html=1;whiteSpace=wrap;startSize=35;" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;1. Bruno or Browser&lt;/font&gt;" vertex="1">
+          <mxGeometry height="107" width="295" x="182" y="169" as="geometry" />
+        </mxCell>
+        <mxCell id="N8Y7AB-o-vH7Z575GZtp-16" parent="N8Y7AB-o-vH7Z575GZtp-1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=12;" value="&lt;div&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;It sends requests such as GET http://localhost:3001/health and POST http://localhost:3001/api/inventory-events.&lt;/font&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="57" width="630" x="12" y="42" as="geometry" />
+        </mxCell>
+        <mxCell id="N8Y7AB-o-vH7Z575GZtp-2" parent="1" style="swimlane;whiteSpace=wrap;html=1;startSize=34;" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;2. Host - Port Mapping (3001:3001 )&lt;/font&gt;" vertex="1">
+          <mxGeometry height="81" width="298" x="180" y="337" as="geometry" />
+        </mxCell>
+        <mxCell id="N8Y7AB-o-vH7Z575GZtp-17" parent="N8Y7AB-o-vH7Z575GZtp-2" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontFamily=Helvetica;fontSize=12;fontColor=default;fontStyle=0;" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;It lets your computer access port 3001 inside the API container through localhost:3001.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="46" width="633" x="5" y="36" as="geometry" />
+        </mxCell>
+        <mxCell id="N8Y7AB-o-vH7Z575GZtp-3" edge="1" parent="1" source="N8Y7AB-o-vH7Z575GZtp-1" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="N8Y7AB-o-vH7Z575GZtp-2" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="346" y="539" as="sourcePoint" />
+            <mxPoint x="446" y="539" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="N8Y7AB-o-vH7Z575GZtp-13" edge="1" parent="1" source="N8Y7AB-o-vH7Z575GZtp-7" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;" target="N8Y7AB-o-vH7Z575GZtp-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="N8Y7AB-o-vH7Z575GZtp-22" connectable="0" parent="N8Y7AB-o-vH7Z575GZtp-13" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;h3&gt;&lt;font&gt;6. Docker Compose private network -&amp;nbsp;&lt;span style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212)); color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;API connects to mongo:27017&lt;/span&gt;&lt;/font&gt;&lt;/h3&gt;" vertex="1">
+          <mxGeometry relative="1" x="0.4887" y="-1" as="geometry">
+            <mxPoint x="1" y="-23" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="N8Y7AB-o-vH7Z575GZtp-7" parent="1" style="swimlane;whiteSpace=wrap;html=1;swimlaneLine=1;rounded=0;glass=0;swimlaneFillColor=default;fillColor=#dae8fc;strokeColor=#6c8ebf;startSize=40;" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;4. Node.js / Express API container&lt;/font&gt;" vertex="1">
+          <mxGeometry height="100" width="410" x="123" y="498" as="geometry" />
+        </mxCell>
+        <mxCell id="N8Y7AB-o-vH7Z575GZtp-8" parent="N8Y7AB-o-vH7Z575GZtp-7" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="&lt;div&gt;&lt;ul style=&quot;padding-left: 0px; margin-top: 0px; margin-bottom: 0px;&quot;&gt;&lt;li&gt;existing application code&lt;/li&gt;&lt;li&gt;NODE_ENV=development&lt;/li&gt;&lt;li&gt;PORT=3001&lt;/li&gt;&lt;li&gt;MONGODB_URI=mongodb://mongo:27017/back_in_stock_prototype&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="70" width="419" x="21" y="37" as="geometry" />
+        </mxCell>
+        <mxCell id="N8Y7AB-o-vH7Z575GZtp-11" parent="1" style="swimlane;whiteSpace=wrap;html=1;swimlaneFillColor=default;fillColor=#dae8fc;strokeColor=#6c8ebf;startSize=38;" value="&lt;h2&gt;7. MongoDB container&lt;/h2&gt;" vertex="1">
+          <mxGeometry height="101" width="200" x="228" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="N8Y7AB-o-vH7Z575GZtp-20" parent="N8Y7AB-o-vH7Z575GZtp-11" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;It stores notification requests and inventory events, just as your local MongoDB does now.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="49" width="390" x="12" y="47" as="geometry" />
+        </mxCell>
+        <mxCell id="N8Y7AB-o-vH7Z575GZtp-12" parent="1" style="swimlane;whiteSpace=wrap;html=1;swimlaneFillColor=default;fillColor=#dae8fc;strokeColor=#6c8ebf;startSize=31;" value="&lt;h2&gt;8. Named Docker volume&lt;/h2&gt;" vertex="1">
+          <mxGeometry height="104" width="200" x="228" y="821" as="geometry" />
+        </mxCell>
+        <mxCell id="N8Y7AB-o-vH7Z575GZtp-21" parent="N8Y7AB-o-vH7Z575GZtp-12" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="It keeps MongoDB data even if the MongoDB container is stopped or recreated." vertex="1">
+          <mxGeometry height="70" width="373" x="21" y="19" as="geometry" />
+        </mxCell>
+        <mxCell id="N8Y7AB-o-vH7Z575GZtp-34" edge="1" parent="1" source="N8Y7AB-o-vH7Z575GZtp-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="N8Y7AB-o-vH7Z575GZtp-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="N8Y7AB-o-vH7Z575GZtp-35" connectable="0" parent="N8Y7AB-o-vH7Z575GZtp-34" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;h3&gt;mount: mongodb-data:/data/db&lt;/h3&gt;" vertex="1">
+          <mxGeometry relative="1" x="0.248" y="-2" as="geometry">
+            <mxPoint x="5" y="-16" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cI8IbBFspfZX6KJjQwv8-4" parent="1" style="swimlane;whiteSpace=wrap;html=1;startSize=61;" value="&lt;h2&gt;&lt;b style=&quot;color: rgb(52, 50, 45); text-align: left; white-space: pre-wrap;&quot;&gt;&lt;font face=&quot;Helvetica&quot;&gt;5. Runtime configuration: &lt;/font&gt;&lt;/b&gt;&lt;/h2&gt;" vertex="1">
+          <mxGeometry height="197" width="211" x="617" y="352" as="geometry" />
+        </mxCell>
+        <mxCell id="cI8IbBFspfZX6KJjQwv8-5" parent="cI8IbBFspfZX6KJjQwv8-4" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontFamily=Helvetica;fontSize=12;fontColor=default;fontStyle=0;" value="&lt;b style=&quot;color: rgb(52, 50, 45); white-space: pre-wrap;&quot;&gt;&lt;font style=&quot;font-size: 13px;&quot;&gt;compose.yaml provides NODE_ENV, PORT, and MONGODB_URI to the API container. The local .env file is used only for non-container execution and is not committed to Git.&lt;/font&gt;&lt;/b&gt;" vertex="1">
+          <mxGeometry height="120" width="196" x="9" y="69" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

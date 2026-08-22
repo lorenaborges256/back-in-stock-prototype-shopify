@@ -100,7 +100,7 @@ To run this application locally, you must have the following installed on your m
 | Bruno | API testing |
 
 Verify installation:
-```
+```bash
 node -v
 npm -v
 ```
@@ -125,9 +125,14 @@ cd back-in-stock-prototype-shopify
 ### Step 2: install packages
 
 ```bash
-npm install express mongoose dotenv cors helmet
-npm install --save-dev nodemon
+npm ci
 ```
+
+> Before Docker's use those were the local dependency-installation commands:
+> ```bash
+>npm install express mongoose dotenv cors helmet
+>npm install --save-dev nodemon
+>```
 
 ### Step 3: Create the local environment file .env
 
@@ -351,6 +356,8 @@ docker compose down --volumes
 ```
 
 ### 7.5 Docker Architecture and Verification
+
+![Docker Compose Application Architecture Diagram](Documentation\DEV1004_AAD.drawio.png)
 
 The application architecture diagram in `Documentation/DEV1004_AAD.drawio` represents the Docker Compose environment. A Bruno client or browser sends HTTP requests to host port `3001`, which Docker forwards to the Node.js and Express API container. The API receives `NODE_ENV`, `PORT`, and `MONGODB_URI` at runtime. It connects to the MongoDB container through the private Docker network using `mongo:27017`. The MongoDB container stores persistent data in the named `mongodb_data` volume.
 
