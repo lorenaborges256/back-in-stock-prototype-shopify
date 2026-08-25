@@ -127,13 +127,6 @@ cd back-in-stock-prototype-shopify
 ```bash
 npm ci
 ```
-
-> Before Docker's use those were the local dependency-installation commands:
-> ```bash
->npm install express mongoose dotenv cors helmet
->npm install --save-dev nodemon
->```
-
 ### Step 3: Create the local environment file .env
 
 ```bash
@@ -398,10 +391,10 @@ Potential future improvements include:
 - Retry mechanisms for failed notifications
 - Queue-based event processing
 
-![Draft Future implementation on Shopify Store ](_img\backInStock_ProductAvailable.png) Product Variant - ICE - Available
+![Draft Future implementation on Shopify Store ](./_img/backInStock_ProductAvailable.png) Product Variant - ICE - Available
 
-![Draft Future implementation on Shopify Store ](_img\backInStock_ProductSoldOut_button.png) Product Variant - ICE - Unavailable, Sold Out Button
+![Draft Future implementation on Shopify Store ](./_img/backInStock_ProductSoldOut_button.png) Product Variant - ICE - Unavailable, Sold Out Button
 
-![Draft Future implementation on Shopify Store ](_img\backInStock_ProductSoldOut_NotifymeButton.png) Product Variant - ICE - Unavailable Notify-me Button
+![Draft Future implementation on Shopify Store ](./_img/backInStock_ProductSoldOut_NotifymeButton.png) Product Variant - ICE - Unavailable Notify-me Button
 
-![Draft Future implementation on Shopify Store ](_img\backInStock_NotifymeForm.png) Product Variant - ICE - Notify-me Form
+![Draft Future implementation on Shopify Store ](./_img/backInStock_NotifymeForm.png) Product Variant - ICE - Notify-me Form
