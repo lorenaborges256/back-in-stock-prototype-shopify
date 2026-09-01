@@ -44,7 +44,7 @@ The repository uses invented test data and is intended for educational and proto
 
 BACK-TO-STOCK-PROTOTYPE-SHOPIFY
 
-The repository separates application code, Docker configuration, documentation, and supporting visual assets. The `src/` directory contains the runtime API; the Docker files at the repository root define the containerised environment; and the documentation and image folders provide supporting material rather than application runtime dependencies. [1] [3] [4]
+The repository separates application code, Docker configuration, documentation, and supporting visual assets. The `src/` directory contains the runtime API; the Docker files at the repository root define the containerised environment; and the documentation and image folders provide supporting material rather than application runtime dependencies.
 
 ```text
 back-in-stock-prototype-shopify/
@@ -360,7 +360,19 @@ docker compose down --volumes
 
 The application architecture diagram in `Documentation/DEV1004_AAD.drawio` represents the Docker Compose environment. A Bruno client or browser sends HTTP requests to host port `3001`, which Docker forwards to the Node.js and Express API container. The API receives `NODE_ENV`, `PORT`, and `MONGODB_URI` at runtime. It connects to the MongoDB container through the private Docker network using `mongo:27017`. The MongoDB container stores persistent data in the named `mongodb_data` volume.
 
-The solution was verified by building the `back-in-stock-api:1.0.0` image, running it as an individual container, and receiving `200 OK` from `/health`. The Compose environment was then started successfully with healthy API and MongoDB services. A notification request was accepted with `202 Accepted`, a matching inventory event returned `200 OK` with one matched and transitioned request, and the private MongoDB container confirmed the final `matched` notification status and `processed` inventory-event status.
+The solution was verified by building the `back-in-stock-api:1.0.0` image, running it as an individual container, and receiving `200 OK` from `/health`. 
+
+![Docker Compose Application GET /health](./_img/statusOK_GET_health_Compose_test.png)
+
+The Compose environment was then started successfully with healthy API and MongoDB services. A notification request was accepted with `202 Accepted`, a matching inventory event returned `200 OK` with one matched and transitioned request, and the private MongoDB container confirmed the final `matched` notification status and `processed` inventory-event status.
+
+Bruno Evidence:
+![Docker Compose Application Notification Request 202 Accepted](./_img/NotificationRequest_Compose_test_202Accepted.png)
+
+![Docker Compose Application Inventory Event 200 OK](./_img/InventoryEvent_Compose_Test_200OK.png)
+
+MongoDB Compass Notification Request Matched Status, after Notification Request and Inventory Event been registred.
+![Docker Compose Application Notification Request Matched Status](./_img/NotificationRequest_Status_matched.png)
 
 
 ## 8. Code Documentation
