@@ -1,0 +1,30 @@
+# Dependencies and package-manager logs
+node_modules/
+npm-debug.log*
+
+# Local environment values and secrets
+.env
+.env.*
+
+# Git metadata and local editor/OS files
+.git/
+.gitignore
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Test, coverage, cache, and build output
+coverage/
+.nyc_output/
+dist/
+.cache/
+.parcel-cache/
+.eslintcache
+*.log
+
+# Documentation and visual assets are not needed to run the API
+Documentation/
+_img/
+*.pdf
+README.md
+compose.yaml

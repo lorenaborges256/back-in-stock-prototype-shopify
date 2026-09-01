@@ -5,10 +5,12 @@ const allowedFields = new Set([
   'shopDomain',
   'productId',
   'variantId',
+  'inventoryItemId',
   'productTitle',
   'variantTitle',
   'productUrl'
-]);
+] );
+
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/u;
 const identifierPattern = /^[A-Za-z0-9:./_-]+$/u;
@@ -192,6 +194,13 @@ export function validateNotificationRequest(
     128
   );
 
+  const inventoryItemId = requiredText(
+  body.inventoryItemId,
+  'inventoryItemId',
+  errors,
+  128
+);
+
   const productTitle = requiredText(
     body.productTitle,
     'productTitle',
@@ -236,6 +245,13 @@ export function validateNotificationRequest(
     errors
   );
 
+  validIdentifier(
+  inventoryItemId,
+  'inventoryItemId',
+  errors
+);
+
+
   const productUrl =
     rawProductUrl
       ? validateProductUrl(
@@ -269,6 +285,7 @@ export function validateNotificationRequest(
     shopDomain,
     productId,
     variantId,
+    inventoryItemId,
     productTitle,
     variantTitle,
     productUrl,
