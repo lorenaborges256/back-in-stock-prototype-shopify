@@ -12,35 +12,24 @@
 
 ## 1. Project Overview
 
-This project is a Minimum Viable Product (MVP) prototype built with Node.js, Express, and MongoDB,implemented from an Entity Relationship Diagram (ERD).
+This repository contains an **API-focused prototype** for a Shopify-style back-in-stock notification workflow. The application is built with Node.js, Express, MongoDB, and Mongoose. It exposes HTTP endpoints for receiving notification requests, processing development inventory events, and checking service health. Security and request-handling middleware are provided by Helmet, CORS, and Express JSON parsing.
 
-The MVP prototype application allows:
+The implemented workflow allows a customer to register interest in an unavailable product variant. During development, an inventory-event endpoint can simulate a stock update. When an event reports positive availability for the same shop domain and inventory item, the application finds matching pending notification requests and changes their status to `matched`. MongoDB persists both notification requests and processed inventory events, including duplicate-event protection. 
 
-1. Customers to register interest in an out-of-stock product variant.
-2. Inventory events to be recorded.
-3. Pending notification requests to be matched against inventory updates.
-4. Matching requests to transition from a pending status to a matched status.
+The project can run directly with Node.js and MongoDB or in a containerised local environment. The Docker configuration builds a versioned API image and uses Docker Compose to run two services: the Express API and MongoDB. Compose publishes only the API on port `3001`, places both services on a private bridge network, waits for a healthy MongoDB service before starting the API, and stores database data in the named `mongodb_data` volume.
 
-The project uses invented test data and is intended for educational purposes.
+### Current Scope
 
-### Corrent Scope
-Implemented:
+| Implemented in this prototype | Intentionally not implemented |
+| --- | --- |
+| Notification-request registration and validation | Live Shopify API integration |
+| Development-only inventory-event simulation | Shopify webhook reception |
+| Matching pending requests to positive inventory updates | Email or other customer-notification delivery |
+| Duplicate request and duplicate event prevention | Production queueing, retries, and notification delivery tracking |
+| MongoDB persistence, API health check, and error handling | A storefront user interface or production deployment |
+| Dockerfile, Docker Compose environment, private service network, and persistent MongoDB volume |  |
 
-- Notification request registration
-- Request validation
-- Inventory event processing
-- Duplicate request prevention
-- Duplicate event prevention
-- MongoDB persistence
-- Event-to-request matching
-
-Not implemented:
-
-- Shopify API integration
-- Shopify webhooks
-- Email delivery
-
-Those features were intentionally been excluded from the prototype and are planned as a future enhancement.
+The repository uses invented test data and is intended for educational and prototype purposes. It must not be used with real customer information or production credentials.
 
 ---
 
@@ -51,53 +40,72 @@ Those features were intentionally been excluded from the prototype and are plann
 ![ERD Back to Stock Prototype](_img\backinstockdatamodel.drawio.png)
 
 BACK-TO-STOCK-PROTOTYPE-SHOPIFY
-```
-src
-│
-├── app.js
-├── server.js
-│
-├── config
-│   ├── database.js
-│   └── env.js
-│
-├── controllers
-│   ├── inventoryFixtureController.js
-│   └── notificationRequestController.js
-│
-├── middleware
-│   ├── errorHandler.js
-│   ├── validateInventoryFixtureEvent.js
-│   └── validateNotificationRequest.js
-│
-├── models
-│   ├── NotificationRequest.js
-│   └── ProcessedInventoryEvent.js
-│
-├── routes
-│   ├── inventoryFixtureRoutes.js
-│   └── notificationRoutes.js
-│
-└── services
-    └── inventoryEventService.js
 
+The repository separates application code, Docker configuration, documentation, and supporting visual assets. The `src/` directory contains the runtime API; the Docker files at the repository root define the containerised environment; and the documentation and image folders provide supporting material rather than application runtime dependencies. [1] [3] [4]
+
+```text
+back-in-stock-prototype-shopify/
+├── src/                                      # Express API source code
+│   ├── app.js                                # Express setup, middleware, health route, and route mounting
+│   ├── server.js                             # MongoDB connection and HTTP server startup
+│   ├── config/
+│   │   ├── database.js                       # Database connection configuration
+│   │   └── env.js                            # Environment-variable loading and validation
+│   ├── controllers/
+│   │   ├── inventoryFixtureController.js     # Development inventory-event endpoint controller
+│   │   └── notificationRequestController.js  # Notification-request controller
+│   ├── middleware/
+│   │   ├── errorHandler.js                   # Not-found and application error handling
+│   │   ├── validateInventoryFixtureEvent.js  # Inventory-event request validation
+│   │   └── validateNotificationRequest.js    # Notification-request validation
+│   ├── models/
+│   │   ├── NotificationRequest.js            # Mongoose model for customer requests
+│   │   └── ProcessedInventoryEvent.js        # Mongoose model for idempotent event processing
+│   ├── routes/
+│   │   ├── inventoryFixtureRoutes.js         # Development inventory-event routes
+│   │   └── notificationRoutes.js             # Notification-request routes
+│   └── services/
+│       └── inventoryEventService.js           # Inventory-event matching logic
+│
+├── Dockerfile                                # Builds the Node.js API image and defines its health check
+├── compose.yaml                              # Runs the `api` and `mongo` services, network, and data volume
+├── .dockerignore                             # Removes non-runtime files from the Docker build context
+├── .env.example                              # Example local environment-variable configuration
+├── package.json                              # Project metadata, scripts, and dependencies
+├── package-lock.json                         # Locked dependency versions for repeatable npm installs
+├── Documentation/                            # Supporting report and editable architecture source diagram
+│   ├── 16097_BorgesAmaral_Lorena_ISK1002_A2.md
+│   └── DEV1004_AAD.drawio
+├── _img/                                     # Rendered diagrams and prototype screenshots used by the README/docs
+│   ├── DEV1004_AAD.drawio.png
+│   ├── InventoryEventDataflow.drawio.png
+│   ├── NotificationRequestDataflow.drawio.png
+│   └── ...
+├── README.md                                 # Installation, API, Docker, and project documentation
+└── .gitignore                                # Git exclusions, including the local `.env` file
 ```
 
 ## 3. Prerequisites
 
 ### Software
-To run this application locally, you must have the following installed on your machine:
+The project can be run either in the recommended Docker Compose environment or directly with Node.js. Choose one of the two options below.
 
-| Requirement | Purpose |
-| --- | --- | 
-| Git | Clone the repository. |
-| Node.js (v18 or higher recommended) | Run the Express server and install packages|
-| npm  (Node Package Manager)| Install packages and run scripts | 
-| MongoDB Atlas account (or local MongoDB installation) | Data persistence | 
-| Bruno | API testing |
+| Requirement| Required for Docker Compose | Required for direct Node.js run | Purpose |
+|---|---|---|---|
+| Git| Yes| Yes| Clone the repository.|
+| Docker Desktop, or Docker Engine with the Docker Compose plugin | Yes| No | Build and run the API and MongoDB containers.|
+| Node.js 22.x and npm| No| Yes| Install dependencies and run the Express API directly.|
+| MongoDB Atlas account or local MongoDB instance| No| Yes| Provide database persistence when not using Docker Compose. |
+| Bruno, Postman, curl, or another HTTP client| Optional| Optional| Test the health and API endpoints.|
 
 Verify installation:
-```
+
+```bash
+# Docker Compose route
+docker --version
+docker compose version
+
+# Direct Node.js route
 node -v
 npm -v
 ```
