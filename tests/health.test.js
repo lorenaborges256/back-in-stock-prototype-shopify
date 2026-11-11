@@ -1,0 +1,16 @@
+import request from 'supertest';
+import { describe, expect, it } from 'vitest';
+import app from '../src/app.js';
+
+describe('Health Check Endpoint', () => {
+  it('returns HTTP 200 with status "ok"', async () => {
+    const res = await request(app).get('/health');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ status: 'ok' });
+  });
+
+  it('returns HTTP 404 for an unknown endpoint', async () => {
+    const res = await request(app).get('/api/unknown-route');
+    expect(res.status).toBe(404);
+  });
+});
