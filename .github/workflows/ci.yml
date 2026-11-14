@@ -1,4 +1,4 @@
-name: Continuous Integration
+name: CI/CD Pipeline
 
 on:
   pull_request:
@@ -11,11 +11,18 @@ on:
 
   workflow_dispatch:
 
+  schedule:
+    # Weekly run on Mondays at 03:00 UTC (once workflow is on main)
+    - cron: '0 3 * * 1'
 
 permissions:
   contents: read
+  id-token: write   # Required for Workload Identity Federation authentication
 
 jobs:
+  # =========================================================
+  # JOB 1 — CONTINUOUS INTEGRATION (Tests)
+  # =========================================================
   test:
     name: Run automated tests
     runs-on: ubuntu-latest
@@ -46,5 +53,112 @@ jobs:
         with:
           name: test-results
           path: reports/test-results.log
+          if-no-files-found: warn
+          retention-days: 30
+
+  # =========================================================
+  # JOB 2 — CONTINUOUS DEPLOYMENT (Google Cloud Run)
+  # =========================================================
+  deploy:
+    name: Deploy to Google Cloud Run
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+
+    env:
+      PROJECT_ID: project-e3f11acc-03db-4b3d-8b5
+      REGION: australia-southeast1
+      SERVICE_NAME: back-in-stock-api
+      REPO_NAME: back-in-stock-repo
+      WIF_PROVIDER: projects/571099921877/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+      WIF_SERVICE_ACCOUNT: github-actions-deploy@project-e3f11acc-03db-4b3d-8b5.iam.gserviceaccount.com
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push versioned Docker image
+        run: |
+          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}"
+          docker build \
+            --tag "$IMAGE:${{ github.sha }}" \
+            --tag "$IMAGE:latest" \
+            .
+          docker push "$IMAGE:${{ github.sha }}"
+          docker push "$IMAGE:latest"
+
+      - name: Deploy to Cloud Run
+        run: |
+          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}"
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image "$IMAGE" \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3001 \
+            --set-env-vars "NODE_ENV=production,MONGODB_URI=${{ secrets.MONGODB_URI }}"
+
+      - name: Verify deployment health
+        run: |
+          SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
+            --region ${{ env.REGION }} \
+            --format='value(status.url)')
+          echo "Deployed service URL: $SERVICE_URL"
+          for i in {1..12}; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$SERVICE_URL/health" || echo 000)
+            echo "Health check attempt $i: HTTP $HTTP_CODE"
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "Deployment verified! Live at: $SERVICE_URL"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Health check failed after 12 attempts"
+          exit 1
+
+      - name: Export deployment summary
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p reports
+          SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
+            --region ${{ env.REGION }} \
+            --format='value(status.url)' 2>/dev/null || echo "N/A")
+          cat <<EOF > reports/deployment-summary.txt
+          ==================================================
+          Back-in-Stock Prototype - Deployment Summary
+          ==================================================
+          Timestamp:       $(date -u "+%Y-%m-%d %H:%M:%S UTC")
+          Commit SHA:      ${{ github.sha }}
+          Workflow Run:    #${{ github.run_number }}
+          Service Name:    ${{ env.SERVICE_NAME }}
+          Platform:        Google Cloud Run (managed)
+          Region:          ${{ env.REGION }} (Sydney)
+          Live URL:        $SERVICE_URL
+          Image:           ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          Deploy Status:   ${{ job.status }}
+          ==================================================
+          EOF
+
+      - name: Upload deployment summary artifact
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: deployment-summary
+          path: reports/deployment-summary.txt
           if-no-files-found: warn
           retention-days: 30
